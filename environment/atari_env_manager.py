@@ -27,11 +27,15 @@ class AtariEnvManager(EnvironmentManager):
     def state(self):
         return torch.from_numpy(np.stack(self.frames))
     
+    """
+    Take action and return reward, next_state, and done
+    """
     def step(self, action):
         _, reward, self.done, _ = self.env.step(action)
         screen = self.get_processed_screen()
         self.frames.append(screen)
-        return torch.tensor([reward])
+        next_state = self.state()
+        return (torch.tensor([reward]), next_state, self.done)
         
     def get_processed_screen(self):
         screen = cv2.cvtColor(self.get_raw_screen(), cv2.COLOR_RGB2GRAY)
