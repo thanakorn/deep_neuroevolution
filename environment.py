@@ -29,7 +29,7 @@ plt.axis('off')
 plt.imshow(state[3], cmap=plt.get_cmap('gray'))
 plt.show()
 
-for i in range(2): env.step(env.action_space.sample())
+for i in range(3): env.step(env.action_space.sample())
 state = env.state()
 plt.suptitle('State')
 plt.subplot(141)
@@ -45,4 +45,6 @@ plt.subplot(144)
 plt.axis('off')
 plt.imshow(state[3], cmap=plt.get_cmap('gray'))
 plt.show()
+
+
 # %%

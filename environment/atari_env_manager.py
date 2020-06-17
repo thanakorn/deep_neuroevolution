@@ -14,34 +14,26 @@ class AtariEnvManager(EnvironmentManager):
         self.frames = deque([], maxlen=frame_stack_size)
         
     def reset(self):
-        super().reset()
-        screen = self.get_processed_screen()
-        for _ in range(self.frames.maxlen - 1):
-            self.frames.append(np.zeros_like(screen))
-        self.frames.append(screen)
+        screen = super().reset()
+        screen = self.processed_screen(screen)
+        for _ in range(self.frames.maxlen): self.frames.append(screen)
         return self.state()
         
-    """
-    State is a stack of tensors representing last k images
-    """
+    """Return a stack of tensors representing last k frames"""
     def state(self):
         return torch.from_numpy(np.stack(self.frames))
     
-    """
-    Take action and return reward, next_state, and done
-    """
     def step(self, action):
-        _, reward, self.done, _ = self.env.step(action)
-        screen = self.get_processed_screen()
+        screen, reward, self.done, _ = self.env.step(action)
+        screen = self.processed_screen(screen)
         self.frames.append(screen)
-        next_state = self.state()
-        return (torch.tensor([reward]), next_state, self.done)
+        return (self.state(), torch.tensor([reward]), self.done, _)
         
-    def get_processed_screen(self):
-        screen = cv2.cvtColor(self.get_raw_screen(), cv2.COLOR_RGB2GRAY)
+    def processed_screen(self, screen):
+        screen = cv2.cvtColor(screen, cv2.COLOR_RGB2GRAY)
         screen = cv2.resize(screen, IMAGE_SIZE)
         screen = np.ascontiguousarray(screen)
         return screen
     
     def get_raw_screen(self):
-        return self.render('rgb_array')
+        return self.env.render('rgb_array')
