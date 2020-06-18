@@ -21,7 +21,7 @@ class AtariEnvManager(EnvironmentManager):
         
     """Return a stack of tensors representing last k frames"""
     def state(self):
-        return torch.from_numpy(np.stack(self.frames))
+        return torch.from_numpy(np.stack(self.frames)).float()
     
     def step(self, action):
         screen, reward, self.done, _ = self.env.step(action)
