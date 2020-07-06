@@ -11,11 +11,17 @@ def select_elites(populations: List[NetworkGenotype], fitnesses, n) -> List[Netw
     elites = [populations[i] for i in elite_idx]
     return elites
 
-def mutate(genotype: NetworkGenotype, mutation_power) -> NetworkGenotype:
+def mutate(genotype: NetworkGenotype, mutation_rate) -> NetworkGenotype:
     child = genotype.clone()
-    for _, chromosome in child.chromosomes.items():
-        chromosome += mutation_power * torch.randn(chromosome.shape)
+    for name, chromosome in child.chromosomes.items():
+        child.chromosomes[name] = mutate_tensor(chromosome, mutation_rate)
     return child
+
+def mutate_tensor(t, indices):
+    t_ = t.clone()
+    for idx in indices:
+        t_[idx] = t[idx] + torch.randn(t[idx].shape)
+    return t_
 
 def crossover(a: NetworkGenotype, b:NetworkGenotype) -> NetworkGenotype:
     c = a.clone()
