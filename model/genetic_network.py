@@ -5,7 +5,7 @@ from genetic_algorithm.chromosomes import ChromosomeSchema, ConvChromosome, Line
 
 class GeneticNetwork(nn.Module):     
     @classmethod
-    def genetic_schema(cls) -> ChromosomeSchema:
+    def genetic_schema(cls, input_shape, num_outputs) -> ChromosomeSchema:
         raise NotImplementedError()
     
     def __init__(self, genotype: NetworkGenotype):

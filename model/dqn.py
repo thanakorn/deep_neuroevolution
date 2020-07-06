@@ -1,16 +1,21 @@
 import torch
 import torch.nn as nn
+from genetic_algorithm.chromosomes import *
+from model.genetic_network import GeneticNetwork
 
-class DQN(nn.Module):
+class DQN(GeneticNetwork):
     
-    def __init__(self, input_channels, num_actions, img_size=84):
-        super().__init__()
-        self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=16, kernel_size=8, stride=4)
+    @classmethod
+    def genetic_schema(cls, input_channels, img_size, num_actions):
         conv1_output_size = int((img_size - 8) / 4) + 1
-        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=4, stride=2)
         conv2_output_size = int((conv1_output_size - 4) / 2) + 1
-        self.fc = nn.Linear(32 * (conv2_output_size ** 2), 256)
-        self.output = nn.Linear(256, num_actions)
+        schema = {
+            'conv1': ConvChromosome(input_channels, 16, 8, 4),
+            'conv2': ConvChromosome(16, 32, 4, 2),
+            'fc': LinearChromosome(32 * (conv2_output_size ** 2), 256),
+            'output': LinearChromosome(256, num_actions)
+        }
+        return schema
         
     def forward(self, state):
         out = self.conv1(state)
