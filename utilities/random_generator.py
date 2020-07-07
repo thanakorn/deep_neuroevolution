@@ -6,5 +6,5 @@ class RandomGenerator:
     
 class NPRandomGenerator(RandomGenerator):
     def randint(self, high, n, low=0):
-        return  np.random.randint(low, high, n)
+        return  np.random.choice(range(low, high), n, replace=False)
         

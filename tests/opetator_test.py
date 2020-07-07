@@ -53,47 +53,46 @@ class OpetatorTest(unittest.TestCase):
             if not torch.equal(parent.genes[i], child.genes[i]): num_mutated += 1
         self.assertEqual(num_mutated, int(mutation_rate * len(parent.genes)))
         
+    def test_crossover(self):
+        schema = {
+            'conv': ConvChromosome(3, 4, 3, 4),
+            'fc': LinearChromosome(128, 5),
+            'out': LinearChromosome(5, 2)
+        }
+        a = NetworkGranularGenotype(schema)
+        b = NetworkGranularGenotype(schema)
+        random_generator = RandomGenerator()
+        cross_idx = [3, 11, 9, 0, 1, 6, 5]
+        random_generator.randint = Mock(return_value=cross_idx)
+        c = crossover(a, b, random_generator)
+        for i in range(len(a.genes)):
+            if i in cross_idx: self.assertTrue(torch.equal(b.genes[i], c.genes[i]))
+            else: self.assertTrue(torch.equal(a.genes[i], c.genes[i]))
+            
+    def test_num_genes_crossover(self):
+        schema = {
+            'conv': ConvChromosome(3, 4, 3, 4),
+            'fc': LinearChromosome(128, 5),
+            'out': LinearChromosome(5, 2)
+        }
+        a = NetworkGranularGenotype(schema)
+        b = NetworkGranularGenotype(schema)
+        random_generator = NPRandomGenerator()
+        c = crossover(a, b, random_generator)
+        num_genes_from_a = 0
+        num_genes_from_b = 0
+        for i in range(len(a.genes)):
+            if torch.equal(a.genes[i], c.genes[i]): num_genes_from_a += 1
+            elif torch.equal(b.genes[i], c.genes[i]): num_genes_from_b += 1
+        self.assertEqual(int(0.5 * len(a.genes)), num_genes_from_a)
+        self.assertEqual(int(0.5 * len(b.genes)), num_genes_from_b)
     
     def test_gen_population_mutation(self):
         parents = [NetworkGranularGenotype(schema) for i in range(5)]
         children = gen_population_mutation(parents, 50)
         self.assertEqual(len(children), 50)
         
-    # def test_crossover(self):
-    #     parent_1, parent_2 = NetworkGenotype(schema), NetworkGenotype(schema)
-    #     child = crossover(parent_1, parent_2)
-    #     # Child must be different from both parents
-    #     self.assertFalse(
-    #         torch.equal(parent_1.chromosomes['conv.weight'], child.chromosomes['conv.weight']) and
-    #         torch.equal(parent_1.chromosomes['conv.bias'], child.chromosomes['conv.bias']) and
-    #         torch.equal(parent_1.chromosomes['fc.weight'], child.chromosomes['fc.weight']) and
-    #         torch.equal(parent_1.chromosomes['fc.bias'], child.chromosomes['fc.bias'])
-    #     )
-    #     self.assertFalse(
-    #         torch.equal(parent_2.chromosomes['conv.weight'], child.chromosomes['conv.weight']) and
-    #         torch.equal(parent_2.chromosomes['conv.bias'], child.chromosomes['conv.bias']) and
-    #         torch.equal(parent_2.chromosomes['fc.weight'], child.chromosomes['fc.weight']) and
-    #         torch.equal(parent_2.chromosomes['fc.bias'], child.chromosomes['fc.bias'])
-    #     )
-    #     # Child must get chromosome from one of parents
-    #     self.assertTrue(
-    #         torch.equal(parent_1.chromosomes['conv.weight'], child.chromosomes['conv.weight']) or 
-    #         torch.equal(parent_2.chromosomes['conv.weight'], child.chromosomes['conv.weight'])
-    #     )
-    #     self.assertTrue(
-    #         torch.equal(parent_1.chromosomes['conv.bias'], child.chromosomes['conv.bias']) or 
-    #         torch.equal(parent_2.chromosomes['conv.bias'], child.chromosomes['conv.bias'])
-    #     )
-    #     self.assertTrue(
-    #         torch.equal(parent_1.chromosomes['fc.weight'], child.chromosomes['fc.weight']) or 
-    #         torch.equal(parent_2.chromosomes['fc.weight'], child.chromosomes['fc.weight'])
-    #     )
-    #     self.assertTrue(
-    #         torch.equal(parent_1.chromosomes['fc.bias'], child.chromosomes['fc.bias']) or 
-    #         torch.equal(parent_2.chromosomes['fc.bias'], child.chromosomes['fc.bias'])
-    #     )
-        
-    # def test_gen_population_crossover(self):
-    #     parents = [NetworkGenotype(schema) for i in range(5)]
-    #     children = gen_population_crossover(parents, 10)
-    #     self.assertEqual(len(children), 10)
+    def test_gen_population_crossover(self):
+        parents = [NetworkGranularGenotype(schema) for i in range(5)]
+        children = gen_population_crossover(parents, 10)
+        self.assertEqual(len(children), 10)

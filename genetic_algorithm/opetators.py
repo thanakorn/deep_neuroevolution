@@ -21,11 +21,11 @@ def mutate(genotype: NetworkGenotype, random_generator: RandomGenerator, mutatio
     for i in idx_to_mutate: child.genes[i] += mutation_power * torch.randn_like(child.genes[i])
     return child
 
-def crossover(a: NetworkGenotype, b:NetworkGenotype) -> NetworkGenotype:
+def crossover(a: NetworkGenotype, b:NetworkGenotype, random_generator: RandomGenerator) -> NetworkGenotype:
     c = a.clone()
-    for name in a.chromosomes.keys():
-        a_chromosome, b_chromosome = a.chromosomes[name], b.chromosomes[name]
-        c.chromosomes[name] = a_chromosome.clone() if np.random.rand() <= 0.5 else b_chromosome.clone()
+    gene_length = len(a.genes)
+    idx_to_cross = random_generator.randint(gene_length, int(0.5 * gene_length)) # Uniform crossover w. 50% of genes from each parent
+    for i in idx_to_cross: c.genes[i] = b.genes[i]
     return c
 
 def gen_population_mutation(parents: List[NetworkGenotype], n, mutation_rate=0.01, mutation_power=1.):
@@ -42,5 +42,5 @@ def gen_population_crossover(parents: List[NetworkGenotype], n):
     for i in range(n):
         a, b = np.random.randint(0, num_parents, 2)
         while a == b: a, b = np.random.randint(0, num_parents, 2)
-        new_generation.append(crossover(parents[a], parents[b]))
+        new_generation.append(crossover(parents[a], parents[b], random_generator))
     return new_generation
