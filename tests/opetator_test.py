@@ -1,7 +1,7 @@
 import unittest
 import torch
 import torch.nn as nn
-from genetic_algorithm.genotype import NetworkGranularGenotype
+from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.chromosomes import *
 from genetic_algorithm.opetators import *
 from utilities.random_generator import RandomGenerator, NPRandomGenerator
@@ -17,7 +17,7 @@ schema = {
 class OpetatorTest(unittest.TestCase):
     
     def test_select_elites(self):
-        genotypes = [NetworkGenotype(schema) for i in range(7)]
+        genotypes = [TensorGenotype(schema) for i in range(7)]
         fitnesses = [0.01, 1.0, 0.8, 0.2, 0.9, 0.75, 0.2]
         elites = select_elites(genotypes, fitnesses, 3)
         self.assertEqual(elites[0], genotypes[2])
@@ -25,7 +25,7 @@ class OpetatorTest(unittest.TestCase):
         self.assertEqual(elites[2], genotypes[1])
     
     def test_mutation(self):
-        parent = NetworkGranularGenotype(schema)
+        parent = TensorGenotype(schema)
         random_generator = RandomGenerator()
         mutate_idx = [3, 25, 19]
         random_generator.randint = Mock(return_value=mutate_idx)
@@ -44,7 +44,7 @@ class OpetatorTest(unittest.TestCase):
             'fc1': LinearChromosome(1024, 64),
             'fc2': LinearChromosome(16, 2)
         }
-        parent = NetworkGranularGenotype(schema)
+        parent = TensorGenotype(schema)
         random_generator = NPRandomGenerator()
         mutation_rate = 0.02
         child = mutate(parent, random_generator, mutation_rate)
@@ -59,8 +59,8 @@ class OpetatorTest(unittest.TestCase):
             'fc': LinearChromosome(128, 5),
             'out': LinearChromosome(5, 2)
         }
-        a = NetworkGranularGenotype(schema)
-        b = NetworkGranularGenotype(schema)
+        a = TensorGenotype(schema)
+        b = TensorGenotype(schema)
         random_generator = RandomGenerator()
         cross_idx = [3, 11, 9, 0, 1, 6, 5]
         random_generator.randint = Mock(return_value=cross_idx)
@@ -75,8 +75,8 @@ class OpetatorTest(unittest.TestCase):
             'fc': LinearChromosome(128, 5),
             'out': LinearChromosome(5, 2)
         }
-        a = NetworkGranularGenotype(schema)
-        b = NetworkGranularGenotype(schema)
+        a = TensorGenotype(schema)
+        b = TensorGenotype(schema)
         random_generator = NPRandomGenerator()
         c = crossover(a, b, random_generator)
         num_genes_from_a = 0
@@ -88,11 +88,11 @@ class OpetatorTest(unittest.TestCase):
         self.assertEqual(int(0.5 * len(b.genes)), num_genes_from_b)
     
     def test_gen_population_mutation(self):
-        parents = [NetworkGranularGenotype(schema) for i in range(5)]
+        parents = [TensorGenotype(schema) for i in range(5)]
         children = gen_population_mutation(parents, 50)
         self.assertEqual(len(children), 50)
         
     def test_gen_population_crossover(self):
-        parents = [NetworkGranularGenotype(schema) for i in range(5)]
+        parents = [TensorGenotype(schema) for i in range(5)]
         children = gen_population_crossover(parents, 10)
         self.assertEqual(len(children), 10)

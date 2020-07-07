@@ -1,7 +1,7 @@
 import unittest
 import torch
 from genetic_algorithm.chromosomes import ConvChromosome, LinearChromosome
-from genetic_algorithm.genotype import NetworkGenotype, NetworkGranularGenotype
+from genetic_algorithm.genotype import NetworkGenotype, TensorGenotype
 
 schema = {
             'conv1': ConvChromosome(4,16,8,8),
@@ -10,9 +10,9 @@ schema = {
             'output': LinearChromosome(256,6),
         }
 
-class GranularGenotypeTest(unittest.TestCase):
+class TensorGenotypeTest(unittest.TestCase):
     def test_generate_genes(self):
-        genotype = NetworkGranularGenotype(schema)
+        genotype = TensorGenotype(schema)
         genes = genotype.genes
         self.assertTrue(len(genes) == 314)
         # conv1
@@ -29,7 +29,7 @@ class GranularGenotypeTest(unittest.TestCase):
         self.assertTrue(genes[313].shape == torch.Size([6]))
         
     def test_state_dict_keys(self):
-        genotype = NetworkGranularGenotype(schema)
+        genotype = TensorGenotype(schema)
         state_dict = genotype.to_state_dict()
         self.assertTrue('conv1.weight' in state_dict)
         self.assertTrue('conv1.bias' in state_dict)
@@ -41,7 +41,7 @@ class GranularGenotypeTest(unittest.TestCase):
         self.assertTrue('output.bias' in state_dict)
         
     def test_state_dict_values(self):
-        state_dict = NetworkGranularGenotype(schema).to_state_dict()
+        state_dict = TensorGenotype(schema).to_state_dict()
         self.assertEqual(len(state_dict.keys()), 8)
         self.assertTrue(torch.Size([16,4,8,8]) == state_dict['conv1.weight'].shape)
         self.assertTrue(torch.Size([16]) == state_dict['conv1.bias'].shape)
