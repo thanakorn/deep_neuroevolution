@@ -14,11 +14,11 @@ def select_elites(populations: List[NetworkGenotype], fitnesses, n) -> List[Netw
     elites = [populations[i] for i in elite_idx]
     return elites
 
-def mutate(genotype: NetworkGenotype, random_generator: RandomGenerator, mutation_rate) -> NetworkGenotype:
+def mutate(genotype: NetworkGenotype, random_generator: RandomGenerator, mutation_rate, mutation_power=1.) -> NetworkGenotype:
     child = genotype.clone()
     gene_length = len(genotype.genes)
     idx_to_mutate = random_generator.randint(gene_length, int(mutation_rate * gene_length))
-    for i in idx_to_mutate: child.genes[i] += torch.randn_like(child.genes[i])
+    for i in idx_to_mutate: child.genes[i] += mutation_power * torch.randn_like(child.genes[i])
     return child
 
 def crossover(a: NetworkGenotype, b:NetworkGenotype) -> NetworkGenotype:
@@ -28,11 +28,11 @@ def crossover(a: NetworkGenotype, b:NetworkGenotype) -> NetworkGenotype:
         c.chromosomes[name] = a_chromosome.clone() if np.random.rand() <= 0.5 else b_chromosome.clone()
     return c
 
-def gen_population_mutation(parents: List[NetworkGenotype], n, mutation_rate=0.01):
+def gen_population_mutation(parents: List[NetworkGenotype], n, mutation_rate=0.01, mutation_power=1.):
     new_generation = []
     K = np.random.randint(0, len(parents), n)
     parents = [parents[k] for k in K]
-    for p in parents: new_generation.append(mutate(p, random_generator, mutation_rate))
+    for p in parents: new_generation.append(mutate(p, random_generator, mutation_rate, mutation_power))
     return new_generation
 
 def gen_population_crossover(parents: List[NetworkGenotype], n):

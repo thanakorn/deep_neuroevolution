@@ -14,12 +14,13 @@ from typing import TypeVar
 M = TypeVar('M', GeneticNetwork, GeneticNetwork)
 
 class GeneticAlgorithm():
-    def __init__(self, num_populations, fitness_evaluator, selection_pressure, mutation_prob, crossover_prob,
+    def __init__(self, num_populations, fitness_evaluator, selection_pressure, mutation_prob, mutation_power, crossover_prob,
                  model_type: M, **model_params):
         self.num_populations = num_populations
         self.fitness_evaluator = fitness_evaluator
         self.selection_pressure = selection_pressure
         self.mutation_prob = mutation_prob
+        self.mutation_power = mutation_power
         self.croosover_prob = crossover_prob
         self.model_type = model_type
         self.model_params = model_params
@@ -48,7 +49,7 @@ class SimpleGA(GeneticAlgorithm):
         num_elites = int(self.selection_pressure * self.num_populations)
         elites = select_elites(old_gen, fitnesses, num_elites)
         new_generation = [elites[-1]] # Best model survives and is carried to next gen
-        mutation_populations = gen_population_mutation(elites, n=self.num_populations - 1, mutation_rate=0.01)
+        mutation_populations = gen_population_mutation(elites, n=self.num_populations - 1, mutation_rate=self.mutation_prob, mutation_power=self.mutation_power)
         # crossover_populations = gen_population_crossover(elites, n=int(self.num_populations / 2))
         new_generation.extend(mutation_populations)
         # new_generation.extend(crossover_populations)
