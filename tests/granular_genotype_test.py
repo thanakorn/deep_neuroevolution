@@ -16,20 +16,16 @@ class GranularGenotypeTest(unittest.TestCase):
         genes = genotype.genes
         self.assertTrue(len(genes) == 314)
         # conv1
-        self.assertTrue(genes[0].shape == torch.Size([4, 8, 8]))
-        self.assertTrue(genes[15].shape == torch.Size([4, 8, 8]))
+        for i in range(16): self.assertTrue(genes[i].shape == torch.Size([4, 8, 8]))
         self.assertTrue(genes[16].shape == torch.Size([16]))
         # conv2
-        self.assertTrue(genes[17].shape == torch.Size([16, 4, 4]))
-        self.assertTrue(genes[48].shape == torch.Size([16, 4, 4]))
+        for i in range(17, 49): self.assertTrue(genes[i].shape == torch.Size([16, 4, 4]))
         self.assertTrue(genes[49].shape == torch.Size([32]))
         # fc
-        self.assertTrue(genes[50].shape == torch.Size([2592]))
-        self.assertTrue(genes[305].shape == torch.Size([2592]))
+        for i in range(50,306): self.assertTrue(genes[i].shape == torch.Size([2592]))
         self.assertTrue(genes[306].shape == torch.Size([256]))
         # output
-        self.assertTrue(genes[307].shape == torch.Size([256]))
-        self.assertTrue(genes[312].shape == torch.Size([256]))
+        for i in range(307, 313): self.assertTrue(genes[i].shape == torch.Size([256]))
         self.assertTrue(genes[313].shape == torch.Size([6]))
         
     def test_state_dict_keys(self):
