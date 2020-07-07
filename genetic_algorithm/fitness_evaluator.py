@@ -29,7 +29,7 @@ class GymFitnessEvaluator():
             
             while not done:
                 if visualize : self.env.render()
-                action = model(state.unsqueeze(0)).argmax()
+                action = model(state.unsqueeze(0).to(self.device)).argmax()
                 state, reward, done, _ = self.env.step(action)
                 total_reward += reward.item()
             
