@@ -12,17 +12,17 @@ class FitnessEvaluator():
         raise NotImplementedError()
     
 class GymFitnessEvaluator():
-    def __init__(self, env, frame_skip=1, device='cpu'):
+    def __init__(self, env, num_episodes=1,device='cpu'):
         self.env = env
-        self.frame_skip = frame_skip
+        self.num_episodes = num_episodes
         self.device = device
         
-    def eval_fitness(self, model_type: T, genotype: NetworkGenotype, num_episodes=1, visualize = False):
+    def eval_fitness(self, model_type: T, genotype: NetworkGenotype, visualize = False):
         model = model_type(genotype).to(self.device)
         model.eval()
         fitness = 0.
         
-        for ep in range(num_episodes):
+        for ep in range(self.num_episodes):
             state = self.env.reset()
             done = False
             total_reward = 0
@@ -33,7 +33,7 @@ class GymFitnessEvaluator():
                 state, reward, done, _ = self.env.step(action)
                 total_reward += reward.item()
             
-            fitness += total_reward / float(num_episodes)
+            fitness += total_reward / float(self.num_episodes)
             
         self.env.close()
         return fitness

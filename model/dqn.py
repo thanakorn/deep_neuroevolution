@@ -7,7 +7,10 @@ from model.genetic_network import GeneticNetwork
 class DQN(GeneticNetwork):
     
     @classmethod
-    def genetic_schema(cls, input_channels, img_size, num_actions):
+    def genetic_schema(cls, **model_params):
+        input_channels = model_params['input_channels']
+        img_size = model_params['img_size']
+        num_actions = model_params['num_actions']
         conv1_output_size = int((img_size - 8) / 4) + 1
         conv2_output_size = int((conv1_output_size - 4) / 2) + 1
         schema = OrderedDict()
