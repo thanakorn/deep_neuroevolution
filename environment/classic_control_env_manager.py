@@ -9,13 +9,11 @@ from environment.environment_manager import EnvironmentManager
 IMAGE_SIZE = (60, 40)
 
 class ClassicControlEnvManager(EnvironmentManager):
-    def __init__(self, env_name, frame_stack_size=4):
+    def __init__(self, env_name):
         super().__init__(gym.make(env_name).unwrapped)
         
     def reset(self):
         super().reset()
-        screen = self.env.render('rgb_array')
-        screen = self.processed_screen(screen)
         return self.state()
         
     """Return a stack of tensors representing last k frames"""
@@ -34,6 +32,3 @@ class ClassicControlEnvManager(EnvironmentManager):
         h, w = screen.shape
         screen = np.ascontiguousarray(screen)
         return screen
-    
-    def get_raw_screen(self):
-        return self.env.render('rgb_array')
