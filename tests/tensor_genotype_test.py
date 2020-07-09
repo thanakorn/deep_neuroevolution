@@ -1,13 +1,13 @@
 import unittest
 import torch
-from genetic_algorithm.chromosomes import ConvChromosome, LinearChromosome
+from genetic_algorithm.network_schema import *
 from genetic_algorithm.genotype import NetworkGenotype, TensorGenotype
 
 schema = {
-            'conv1': ConvChromosome(4,16,8,8),
-            'conv2': ConvChromosome(16,32,4,4),
-            'fc': LinearChromosome(2592, 256),
-            'output': LinearChromosome(256,6),
+            'conv1': ConvSchema(4,16,8,8),
+            'conv2': ConvSchema(16,32,4,4),
+            'fc': LinearSchema(2592, 256),
+            'output': LinearSchema(256,6),
         }
 
 class TensorGenotypeTest(unittest.TestCase):

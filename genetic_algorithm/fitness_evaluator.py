@@ -7,18 +7,19 @@ from itertools import count
 
 T = TypeVar('T', GeneticNetwork, GeneticNetwork)
 
-class FitnessEvaluator():
+class FitnessEvaluator:
     def eval_fitness(self, genotype: NetworkGenotype) -> float:
         raise NotImplementedError()
     
-class GymFitnessEvaluator():
-    def __init__(self, env, num_episodes=1,device='cpu'):
+class GymFitnessEvaluator(FitnessEvaluator):
+    def __init__(self, env, num_episodes=1, device='cpu', visualize=False):
         self.env = env
         self.num_episodes = num_episodes
         self.device = device
+        self.visualize = visualize
         
-    def eval_fitness(self, model_type: T, genotype: NetworkGenotype, visualize = False):
-        model = model_type(genotype).to(self.device)
+    def eval_fitness(self, genotype: NetworkGenotype):
+        model = genotype.to_network().to(self.device)
         model.eval()
         fitness = 0.
         
@@ -28,12 +29,12 @@ class GymFitnessEvaluator():
             total_reward = 0
             
             while not done:
-                if visualize : self.env.render()
+                if self.visualize : self.env.render()
                 action = model(state.unsqueeze(0).to(self.device)).argmax()
                 state, reward, done, _ = self.env.step(action)
                 total_reward += reward.item()
             
             fitness += total_reward / float(self.num_episodes)
             
-        self.env.close()
+        if self.visualize : self.env.close()
         return fitness

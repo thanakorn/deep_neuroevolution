@@ -2,18 +2,17 @@ import unittest
 import torch
 import torch.nn as nn
 from genetic_algorithm.genotype import TensorGenotype
-from genetic_algorithm.chromosomes import *
+from genetic_algorithm.network_schema import *
 from genetic_algorithm.opetators import *
 from utilities.random_generator import RandomGenerator, NPRandomGenerator
 from unittest.mock import Mock
 
 schema = {
-    'conv': ConvChromosome(3, 16, 3, 4),
-    'fc1': LinearChromosome(128, 16),
-    'fc2': LinearChromosome(16, 2)
+    'conv': ConvSchema(3, 16, 3, 4),
+    'fc1': LinearSchema(128, 16),
+    'fc2': LinearSchema(16, 2)
 }
-
-    
+ 
 class OpetatorTest(unittest.TestCase):
     
     def test_select_elites(self):
@@ -39,10 +38,10 @@ class OpetatorTest(unittest.TestCase):
             
     def test_num_genes_mutated(self):
         schema = {
-            'conv1': ConvChromosome(3, 16, 7, 4),
-            'conv2': ConvChromosome(16, 32, 3, 4),
-            'fc1': LinearChromosome(1024, 64),
-            'fc2': LinearChromosome(16, 2)
+            'conv1': ConvSchema(3, 16, 7, 4),
+            'conv2': ConvSchema(16, 32, 3, 4),
+            'fc1': LinearSchema(1024, 64),
+            'fc2': LinearSchema(16, 2)
         }
         parent = TensorGenotype(schema)
         random_generator = NPRandomGenerator()
@@ -55,9 +54,9 @@ class OpetatorTest(unittest.TestCase):
         
     def test_crossover(self):
         schema = {
-            'conv': ConvChromosome(3, 4, 3, 4),
-            'fc': LinearChromosome(128, 5),
-            'out': LinearChromosome(5, 2)
+            'conv': ConvSchema(3, 4, 3, 4),
+            'fc': LinearSchema(128, 5),
+            'out': LinearSchema(5, 2)
         }
         a = TensorGenotype(schema)
         b = TensorGenotype(schema)
@@ -71,9 +70,9 @@ class OpetatorTest(unittest.TestCase):
             
     def test_num_genes_crossover(self):
         schema = {
-            'conv': ConvChromosome(3, 4, 3, 4),
-            'fc': LinearChromosome(128, 5),
-            'out': LinearChromosome(5, 2)
+            'conv': ConvSchema(3, 4, 3, 4),
+            'fc': LinearSchema(128, 5),
+            'out': LinearSchema(5, 2)
         }
         a = TensorGenotype(schema)
         b = TensorGenotype(schema)

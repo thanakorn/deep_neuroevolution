@@ -1,15 +1,15 @@
 import unittest
 import torch
-from genetic_algorithm.chromosomes import ConvChromosome, LinearChromosome
-from genetic_algorithm.genotype import NetworkGenotype, LayerGenotype
+from genetic_algorithm.network_schema import *
+from genetic_algorithm.genotype import *
 
 class LayerGenotypeTest(unittest.TestCase):
     def test_network_genotype_create_parameters(self):
         network_schema = {
-            'conv1': ConvChromosome(3,16,4,4),
-            'conv2': ConvChromosome(16,32,5,2),
-            'fc1': LinearChromosome(12,8),
-            'fc2': LinearChromosome(8,2),
+            'conv1': ConvSchema(3,16,4,4),
+            'conv2': ConvSchema(16,32,5,2),
+            'fc1': LinearSchema(12,8),
+            'fc2': LinearSchema(8,2),
         }
         network_genotype = LayerGenotype(network_schema)
         self.assertTrue('conv1.weight' in network_genotype.genes)
@@ -23,8 +23,8 @@ class LayerGenotypeTest(unittest.TestCase):
         
     def test_network_genotype_parameter_dimension(self):
         network_schema = {
-            'conv1': ConvChromosome(3,16,4,2),
-            'fc1': LinearChromosome(12,2)
+            'conv1': ConvSchema(3,16,4,2),
+            'fc1': LinearSchema(12,2)
         }
         network_genotype = LayerGenotype(network_schema)
         conv1_weight = network_genotype.genes['conv1.weight']
@@ -38,8 +38,8 @@ class LayerGenotypeTest(unittest.TestCase):
         
     def test_network_genotype_clone(self):
         network_schema = {
-            'conv1': ConvChromosome(3,16,4,2),
-            'fc1': LinearChromosome(12,2)
+            'conv1': ConvSchema(3,16,4,2),
+            'fc1': LinearSchema(12,2)
         }
         genotype = LayerGenotype(network_schema)
         genes = genotype.genes
@@ -52,3 +52,33 @@ class LayerGenotypeTest(unittest.TestCase):
         self.assertTrue(torch.equal(genes['fc1.bias'], cloned_genes['fc1.bias']))
         clone_genotype.genes['fc1.bias'][0] = 0.
         self.assertFalse(torch.equal(genes['fc1.bias'], cloned_genes['fc1.bias'])) # Ensure deepcopy
+        
+    def test_genoty_to_network(self):
+        network_schema = {
+            'conv1': ConvSchema(3,16,4,2),
+            'conv2': ConvSchema(3,16,4,2),
+            'relu1': ActivationSchema('ReLU'),
+            'flatten': ActivationSchema('Flatten'),
+            'fc1': LinearSchema(12,2),
+            'relu2': ActivationSchema('ReLU'),
+            'fc2': LinearSchema(12,2)
+        }
+        genotype = TensorGenotype(network_schema)
+        network = genotype.to_network()
+        self.assertTrue(isinstance(network.conv1, nn.Conv2d))
+        self.assertTrue(isinstance(network.conv2, nn.Conv2d))
+        self.assertTrue(isinstance(network.relu1, nn.ReLU))
+        self.assertTrue(isinstance(network.relu2, nn.ReLU))
+        self.assertTrue(isinstance(network.flatten, nn.Flatten))
+        self.assertTrue(isinstance(network.fc1, nn.Linear))
+        self.assertTrue(isinstance(network.fc2, nn.Linear))
+        genotype_params = genotype.to_state_dict()
+        network_params = network.state_dict()
+        self.assertTrue(torch.equal(genotype_params['conv1.weight'], network_params['conv1.weight']))
+        self.assertTrue(torch.equal(genotype_params['conv1.bias'], network_params['conv1.bias']))
+        self.assertTrue(torch.equal(genotype_params['conv2.weight'], network_params['conv2.weight']))
+        self.assertTrue(torch.equal(genotype_params['conv2.bias'], network_params['conv2.bias']))
+        self.assertTrue(torch.equal(genotype_params['fc1.weight'], network_params['fc1.weight']))
+        self.assertTrue(torch.equal(genotype_params['fc1.bias'], network_params['fc1.bias']))
+        self.assertTrue(torch.equal(genotype_params['fc2.weight'], network_params['fc2.weight']))
+        self.assertTrue(torch.equal(genotype_params['fc2.bias'], network_params['fc2.bias']))

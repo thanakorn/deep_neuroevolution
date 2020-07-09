@@ -4,7 +4,7 @@ import numpy as np
 from torch import Tensor
 from typing import List
 from genetic_algorithm.genotype import NetworkGenotype
-from genetic_algorithm.chromosomes import *
+from genetic_algorithm.network_schema import *
 from utilities.random_generator import RandomGenerator, NPRandomGenerator
 
 random_generator = NPRandomGenerator()

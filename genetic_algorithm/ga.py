@@ -11,21 +11,16 @@ from genetic_algorithm.opetators import *
 from model.genetic_network import GeneticNetwork
 from typing import TypeVar
 
-np.set_printoptions(2)
-
 M = TypeVar('M', GeneticNetwork, GeneticNetwork)
 
 class GeneticAlgorithm():
-    def __init__(self, num_populations, fitness_evaluator, selection_pressure, mutation_prob, mutation_power, crossover_prob,
-                 model_type: M, **model_params):
+    def __init__(self, num_populations, fitness_evaluator, selection_pressure, mutation_prob, mutation_power, crossover_prob):
         self.num_populations = num_populations
         self.fitness_evaluator = fitness_evaluator
         self.selection_pressure = selection_pressure
         self.mutation_prob = mutation_prob
         self.mutation_power = mutation_power
         self.croosover_prob = crossover_prob
-        self.model_type = model_type
-        self.model_params = model_params
     
     def run(self, num_generations, num_workers=1):
         populations = [TensorGenotype(self.model_type.genetic_schema(**self.model_params)) for i in range(self.num_populations)]
