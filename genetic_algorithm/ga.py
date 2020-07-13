@@ -22,22 +22,24 @@ class GeneticAlgorithm():
         self.mutation_power = mutation_power
         self.croosover_prob = crossover_prob
     
-    def run(self, num_generations, num_workers=1):
-        populations = [TensorGenotype(self.model_type.genetic_schema(**self.model_params)) for i in range(self.num_populations)]
-        fitnesses = np.zeros(self.num_populations)
+    def run(self, populations, num_generations, num_workers=1):
+        solution = None
         for gen in range(num_generations):
-            with concurrent.futures.ThreadPoolExecutor(num_workers) as executor, tqdm(total=len(populations), desc=f'Generation {gen+1}') as t:
-                fitness_futures = [executor.submit(self.fitness_evaluator.eval_fitness, self.model_type, p) for p in populations]
-                for i, f in zip(range(self.num_populations), as_completed(fitness_futures)):
-                    fitnesses[i] = f.result()
+            fitnesses = np.zeros(len(populations))
+            with tqdm(total=len(populations), desc=f'Generation {gen+1}') as t:
+                # fitness_futures = [executor.submit(self.fitness_evaluator.eval_fitness, p) for p in populations]
+                # for i, f in zip(range(self.num_populations), as_completed(fitness_futures)):
+                for i, p in enumerate(populations):
+                    # fitnesses[i] = f.result()
+                    fitnesses[i] = self.fitness_evaluator.eval_fitness(p)
                     t.update()
+                solution = populations[np.argmax(fitnesses)]
                 t.set_postfix(max_f=fitnesses.max(), min_f=fitnesses.min(), avg_f=fitnesses.mean())
-            
-            best = populations[np.argmax(fitnesses)]
+
             new_gen = self.new_generation(populations, fitnesses)
             populations = new_gen
         
-        return best
+        return solution
     
     def new_generation(self, olg_gen, fitnesses):
         raise NotImplementedError()
