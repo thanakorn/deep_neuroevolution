@@ -6,9 +6,9 @@ from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.network_schema import *
 from genetic_algorithm.ga import SimpleGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
-from environment.control_env_manager import ControlEnvManager
+from environment.environment_manager import EnvironmentManager
 
-env = ControlEnvManager('CartPole-v0')
+env = EnvironmentManager('CartPole-v0')
 num_populations = 100
 num_episodes_eval = 5
 network_schema = {

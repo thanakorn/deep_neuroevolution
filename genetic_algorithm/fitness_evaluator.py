@@ -34,7 +34,7 @@ class GymFitnessEvaluator(FitnessEvaluator):
                 if self.visualize : self.env.render()
                 action = model(state.unsqueeze(0).to(self.device)).argmax().item()
                 state, reward, done, _ = self.env.step(action)
-                total_reward += reward.item()
+                total_reward += reward
                 num_iterations += 1
             
             fitness += total_reward / float(self.num_episodes)
