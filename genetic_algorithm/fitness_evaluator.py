@@ -12,9 +12,10 @@ class FitnessEvaluator:
         raise NotImplementedError()
     
 class GymFitnessEvaluator(FitnessEvaluator):
-    def __init__(self, env, num_episodes=1, device='cpu', visualize=False):
+    def __init__(self, env, num_episodes=1, max_iterations=None, device='cpu', visualize=False):
         self.env = env
         self.num_episodes = num_episodes
+        self.max_iterations = max_iterations
         self.device = device
         self.visualize = visualize
         
@@ -27,12 +28,14 @@ class GymFitnessEvaluator(FitnessEvaluator):
             state = self.env.reset()
             done = False
             total_reward = 0
+            num_iterations = 0
             
-            while not done:
+            while not done and (self.max_iterations is None or num_iterations < self.max_iterations):
                 if self.visualize : self.env.render()
                 action = model(state.unsqueeze(0).to(self.device)).argmax().item()
                 state, reward, done, _ = self.env.step(action)
                 total_reward += reward.item()
+                num_iterations += 1
             
             fitness += total_reward / float(self.num_episodes)
             
