@@ -3,8 +3,7 @@ import torch
 
 class EnvironmentManager(gym.Wrapper):
     def __init__(self, env_name, device='cpu'):
-        env = gym.make(env_name).unwrapped
-        super().__init__(env)
+        super().__init__(gym.make(env_name))
         self.done = False
         self.device = device
         
