@@ -1,14 +1,9 @@
 import torch
-import copy
 import numpy as np
-import concurrent.futures
 
-from concurrent.futures import as_completed
-from tqdm import tqdm, trange
-from typing import List
-from genetic_algorithm.genotype import *
 from genetic_algorithm.opetators import *
 from model.genetic_network import GeneticNetwork
+from utilities.ga_helpers import calculate_fitnesses
 from typing import TypeVar
 
 M = TypeVar('M', GeneticNetwork, GeneticNetwork)
@@ -25,17 +20,7 @@ class GeneticAlgorithm():
     def run(self, populations, num_generations, num_workers=1):
         solution = None
         for gen in range(num_generations):
-            fitnesses = np.zeros(len(populations))
-            with tqdm(total=len(populations), desc=f'Generation {gen+1}') as t:
-                # fitness_futures = [executor.submit(self.fitness_evaluator.eval_fitness, p) for p in populations]
-                # for i, f in zip(range(self.num_populations), as_completed(fitness_futures)):
-                for i, p in enumerate(populations):
-                    # fitnesses[i] = f.result()
-                    fitnesses[i] = self.fitness_evaluator.eval_fitness(p)
-                    t.update()
-                solution = populations[np.argmax(fitnesses)]
-                t.set_postfix(max_f=fitnesses.max(), min_f=fitnesses.min(), avg_f=fitnesses.mean())
-
+            fitnesses = calculate_fitnesses(populations, self.fitness_evaluator, num_workers, gen)
             new_gen = self.new_generation(populations, fitnesses)
             populations = new_gen
         
