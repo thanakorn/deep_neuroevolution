@@ -6,7 +6,7 @@ from collections import OrderedDict
 from genetic_algorithm.network_schema import *
 
 class NetworkGenotype:
-    def __init__(self, schema: NetworkSchema):
+    def __init__(self, schema: NetworkSchema, init_func=None):
         self.schema = schema
     
     def to_state_dict(self):
@@ -36,35 +36,44 @@ class NetworkGenotype:
         if name == 'Flatten': return nn.Flatten()
 
 class LayerGenotype(NetworkGenotype):
-    def __init__(self, schema: NetworkSchema):
+    def __init__(self, schema: NetworkSchema, init_func=None):
         self.schema = schema
         self.genes = OrderedDict()
         for name, module_schema in schema.items():
             if isinstance(module_schema, ConvSchema):
                 in_channel, out_channel, kernel_size, _ = module_schema
-                self.genes[f'{name}.weight'] = torch.rand((out_channel, in_channel, kernel_size, kernel_size))
-                self.genes[f'{name}.bias'] = torch.rand(out_channel)
+                weight = torch.rand((out_channel, in_channel, kernel_size, kernel_size))
+                bias = torch.zeros(out_channel)
             elif isinstance(module_schema, LinearSchema):
                 in_feature, out_feature = module_schema
-                self.genes[f'{name}.weight'] = torch.rand((out_feature, in_feature))
-                self.genes[f'{name}.bias'] = torch.rand(out_feature)
+                weight = torch.rand((out_feature, in_feature))
+                bias = torch.zeros(out_feature)
+                
+            self.genes[f'{name}.weight'] = init_func(weight) if init_func is not None else weight
+            self.genes[f'{name}.bias'] = bias
                 
     def to_state_dict(self):
         return self.genes            
     
 class TensorGenotype(NetworkGenotype):
-    def __init__(self, schema: NetworkSchema):
+    def __init__(self, schema: NetworkSchema, init_func=None):
         self.schema = schema
         self.genes = []
         for name, module_schema in schema.items():
             if isinstance(module_schema, ConvSchema):
                 in_channel, out_channel, kernel_size, _ = module_schema
-                for _ in range(out_channel): self.genes.append(torch.rand(in_channel, kernel_size, kernel_size)) # conv kernels
-                self.genes.append(torch.rand(out_channel)) # bias
+                for _ in range(out_channel):
+                    w = torch.rand(in_channel, kernel_size, kernel_size)
+                    w = init_func(w) if init_func is not None else w
+                    self.genes.append(w) # conv kernels
+                self.genes.append(torch.zeros(out_channel)) # bias
             if isinstance(module_schema, LinearSchema):
                 in_feature, out_feature = module_schema
-                for _ in range(out_feature): self.genes.append(torch.rand(in_feature)) # weights
-                self.genes.append(torch.rand(out_feature)) # bias
+                for _ in range(out_feature):
+                    w = torch.rand(in_feature, 1)
+                    w = init_func(w) if init_func is not None else w
+                    self.genes.append(w.squeeze()) # weights
+                self.genes.append(torch.zeros(out_feature)) # bias
                 
     def to_state_dict(self):
         state_dict = {}

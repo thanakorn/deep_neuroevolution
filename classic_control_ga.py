@@ -8,8 +8,8 @@ from genetic_algorithm.ga import SimpleGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.environment_manager import EnvironmentManager
 
-num_populations = 100
-num_episodes_eval = 1
+num_populations = 20
+num_episodes_eval = 3
 network_schema = {
                     'fc1': LinearSchema(4, 128),
                     'relu1': ActivationSchema('ReLU'),
@@ -22,9 +22,9 @@ evaluator = GymFitnessEvaluator(env_name='CartPole-v0', num_episodes=num_episode
                                 max_iterations=500, visualize=True)
 ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, 
               selection_pressure=0.1, mutation_prob=0.01, mutation_power=0.02, crossover_prob=0.5)
-init_populations = [TensorGenotype(network_schema) for i in range(num_populations)]
+init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
 #%%
-solution = ga.run(populations=init_populations, num_generations=10, num_workers=2)
+solution = ga.run(populations=init_populations, num_generations=10, num_workers=None)
 
 # %%
 num_episodes = 10

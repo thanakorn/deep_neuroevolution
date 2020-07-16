@@ -50,8 +50,7 @@ class LayerGenotypeTest(unittest.TestCase):
         self.assertTrue(torch.equal(genes['conv1.bias'], cloned_genes['conv1.bias']))
         self.assertTrue(torch.equal(genes['fc1.weight'], cloned_genes['fc1.weight']))
         self.assertTrue(torch.equal(genes['fc1.bias'], cloned_genes['fc1.bias']))
-        clone_genotype.genes['fc1.bias'][0] = 0.
-        self.assertFalse(torch.equal(genes['fc1.bias'], cloned_genes['fc1.bias'])) # Ensure deepcopy
+        self.assertNotEqual(id(genes['fc1.bias']), id(cloned_genes['fc1.bias'])) # Ensure deepcopy
         
     def test_genoty_to_network(self):
         network_schema = {
