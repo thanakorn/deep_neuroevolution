@@ -21,6 +21,7 @@ class GeneticAlgorithm():
         solution = None
         for gen in range(num_generations):
             fitnesses = calculate_fitnesses(populations, self.fitness_evaluator, num_workers, gen)
+            solution = populations[fitnesses.argmax()]
             new_gen = self.new_generation(populations, fitnesses)
             populations = new_gen
         
