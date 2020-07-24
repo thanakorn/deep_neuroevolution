@@ -17,10 +17,10 @@ class GeneticAlgorithm():
         self.mutation_power = mutation_power
         self.croosover_prob = crossover_prob
     
-    def run(self, populations, num_generations, num_workers=1):
+    def run(self, populations, num_generations, num_workers=None, run_mode=None):
         solution = None
         for gen in range(num_generations):
-            fitnesses = calculate_fitnesses(populations, self.fitness_evaluator, num_workers, gen)
+            fitnesses = calculate_fitnesses(populations, self.fitness_evaluator, gen, num_workers, run_mode)
             solution = populations[fitnesses.argmax()]
             new_gen = self.new_generation(populations, fitnesses)
             populations = new_gen

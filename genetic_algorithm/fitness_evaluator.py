@@ -26,7 +26,7 @@ class GymFitnessEvaluator(FitnessEvaluator):
         model = genotype.to_network().to(self.device)
         model.eval()
         fitness = 0.
-        
+
         for ep in range(self.num_episodes):
             state = env.reset()
             done = False
