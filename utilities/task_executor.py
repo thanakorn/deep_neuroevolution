@@ -20,6 +20,7 @@ def execute_multithread(f, args, num_workers, pbar=None):
         for r in executor.map(f, args):
             results.append(r)
             if pbar is not None: pbar.update()
+        executor.shutdown()
     return results
 
 def execute_multiprocess(f, args, num_workers, pbar=None):
