@@ -8,14 +8,9 @@ from genetic_algorithm.network_schema import *
 class NetworkGenotype:
     def __init__(self, schema: NetworkSchema, init_func=None):
         self.schema = schema
-    
-    def to_state_dict(self):
-        raise NotImplementedError()
-    
-    def clone(self):
-        return copy.deepcopy(self)
-    
-    def to_network(self):
+        self.network = self.create_init_network()
+        
+    def create_init_network(self):
         network = nn.Sequential()
         for name, module_schema in self.schema.items():
             if isinstance(module_schema, ConvSchema):
@@ -27,9 +22,18 @@ class NetworkGenotype:
             elif isinstance(module_schema, ActivationSchema):
                 module = self.get_activation_module(module_schema[0])
             network.add_module(name, module)
-        
-        network.load_state_dict(self.to_state_dict())
         return network
+    
+    def to_state_dict(self):
+        raise NotImplementedError()
+    
+    def clone(self):
+        return copy.deepcopy(self)
+    
+    def to_network(self):
+        state_dict = self.to_state_dict()
+        self.network.load_state_dict(state_dict)
+        return self.network
         
     def get_activation_module(self, name):
         if name == 'ReLU': return nn.ReLU()
@@ -37,7 +41,7 @@ class NetworkGenotype:
 
 class LayerGenotype(NetworkGenotype):
     def __init__(self, schema: NetworkSchema, init_func=None):
-        self.schema = schema
+        super().__init__(schema, init_func)
         self.genes = OrderedDict()
         for name, module_schema in schema.items():
             if isinstance(module_schema, ConvSchema):
@@ -57,7 +61,7 @@ class LayerGenotype(NetworkGenotype):
     
 class TensorGenotype(NetworkGenotype):
     def __init__(self, schema: NetworkSchema, init_func=None):
-        self.schema = schema
+        super().__init__(schema, init_func)
         self.genes = []
         for name, module_schema in schema.items():
             if isinstance(module_schema, ConvSchema):

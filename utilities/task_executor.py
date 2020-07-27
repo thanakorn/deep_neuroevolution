@@ -1,6 +1,9 @@
-from multiprocessing import Pool
+import torch
+from torch.multiprocessing import Pool, set_sharing_strategy
 from concurrent.futures import as_completed
 import concurrent.futures
+
+set_sharing_strategy('file_system')
 
 def execute(f, args, pbar=None):
     results = []
@@ -26,7 +29,8 @@ def execute_multithread(f, args, num_workers, pbar=None):
 def execute_multiprocess(f, args, num_workers, pbar=None):
     results = []
     with Pool(processes=num_workers) as p:
-        for result in p.map(f, args):
+        results = []
+        for result in p.imap(f, args):
             results.append(result)
             if pbar is not None: pbar.update()
         p.close()
