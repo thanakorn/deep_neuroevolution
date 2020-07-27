@@ -1,9 +1,14 @@
 import torch
 from torch.multiprocessing import Pool, set_sharing_strategy
-from concurrent.futures import as_completed
+from concurrent.futures import as_completed, ThreadPoolExecutor
 import concurrent.futures
 
 set_sharing_strategy('file_system')
+
+global PROCESS_POOL
+global THREAD_POOL
+PROCESS_POOL = None
+THREAD_POOL = None
 
 def execute(f, args, pbar=None):
     results = []
@@ -18,20 +23,21 @@ def concurrent_execute(f, args, mode, num_workers=1, pbar=None):
     if mode == 'multithread': return execute_multithread(f, args, num_workers, pbar)
 
 def execute_multithread(f, args, num_workers, pbar=None):
+    global THREAD_POOL
+    THREAD_POOL = ThreadPoolExecutor(num_workers) if THREAD_POOL is None else THREAD_POOL
+    p = THREAD_POOL
     results = []
-    with concurrent.futures.ThreadPoolExecutor(num_workers) as executor:
-        for r in executor.map(f, args):
-            results.append(r)
-            if pbar is not None: pbar.update()
-        executor.shutdown()
+    for r in p.map(f, args):
+        results.append(r)
+        if pbar is not None: pbar.update()
     return results
 
 def execute_multiprocess(f, args, num_workers, pbar=None):
+    global PROCESS_POOL
+    PROCESS_POOL = Pool(processes=num_workers) if PROCESS_POOL is None else PROCESS_POOL
+    p = PROCESS_POOL
     results = []
-    with Pool(processes=num_workers) as p:
-        results = []
-        for result in p.imap(f, args):
-            results.append(result)
-            if pbar is not None: pbar.update()
-        p.close()
+    for result in p.imap(f, args):
+        results.append(result)
+        if pbar is not None: pbar.update()
     return results
