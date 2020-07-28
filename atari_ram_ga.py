@@ -1,9 +1,12 @@
 import gym
 import torch
+import ray
 from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.network_schema import *
 from genetic_algorithm.ga import SimpleGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
+
+ray.init()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 env_id = 'Frostbite-ram-v0'
@@ -22,9 +25,9 @@ network_schema = {
                }
 
 evaluator = GymFitnessEvaluator(env_name=env_id, num_episodes=num_episodes_eval, 
-                              max_iterations=2000, device=device)
+                              max_iterations=2000, device=device, visualize=False)
 ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, 
             selection_pressure=0.1, mutation_prob=0.01, mutation_power=0.02, crossover_prob=0.5)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
 
-solution = ga.run(populations=init_populations, num_generations=20, num_workers=2, run_mode='multithread')
+solution = ga.run(populations=init_populations, num_generations=20, num_workers=4, run_mode='multiprocess')

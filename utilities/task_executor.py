@@ -1,9 +1,8 @@
 import torch
-from torch.multiprocessing import Pool, set_sharing_strategy
+import ray
+from ray.util.multiprocessing import Pool
 from concurrent.futures import as_completed, ThreadPoolExecutor
 import concurrent.futures
-
-set_sharing_strategy('file_system')
 
 global PROCESS_POOL
 global THREAD_POOL
