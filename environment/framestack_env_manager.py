@@ -6,12 +6,13 @@ import cv2
 from collections import deque
 from environment.environment_manager import EnvironmentManager
 
-IMAGE_SIZE  = (84, 84)
+DEFAULT_IMAGE_SIZE  = (84, 84)
 
 class FrameStackEnvManager(EnvironmentManager):
-    def __init__(self, env_name, device='cpu', frame_stack_size=4):
+    def __init__(self, env_name, device='cpu', img_size=DEFAULT_IMAGE_SIZE, frame_stack_size=4):
         super().__init__(env_name, device)
         self.frames = deque([], maxlen=frame_stack_size)
+        self.img_size = img_size
         
     def reset(self):
         self.env.reset()
@@ -21,7 +22,7 @@ class FrameStackEnvManager(EnvironmentManager):
         return self.state()
 
     def state(self):
-        return torch.from_numpy(np.stack(self.frames)).float()
+        return torch.from_numpy(np.stack(self.frames)).float().to(self.device)
     
     def step(self, action):
         screen, reward, self.done, _ = self.env.step(action)
@@ -31,7 +32,7 @@ class FrameStackEnvManager(EnvironmentManager):
         
     def processed_screen(self, screen):
         screen = cv2.cvtColor(screen, cv2.COLOR_RGB2GRAY)
-        screen = cv2.resize(screen, IMAGE_SIZE)
+        screen = cv2.resize(screen, self.img_size)
         screen = np.ascontiguousarray(screen)
         return screen
     
