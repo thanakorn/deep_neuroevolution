@@ -1,46 +1,48 @@
 import unittest
 import torch
 import cv2
+import numpy as np
 from environment.framestack_env_manager import FrameStackEnvManager, DEFAULT_IMAGE_SIZE
+
+img_size = (64, 64)
+
+def preprocess(screen):
+    screen = cv2.cvtColor(screen, cv2.COLOR_RGB2GRAY)
+    screen = cv2.resize(screen, img_size, interpolation=cv2.INTER_NEAREST)
+    screen = np.ascontiguousarray(screen)
+    return screen
 
 class FrameStackEnvManagerTest(unittest.TestCase):
     def test_env_manager_init(self):
-        img_size = (64, 64)
         stack_size = 3
-        env = FrameStackEnvManager('Breakout-v0', img_size=img_size, frame_stack_size=stack_size)
+        env = FrameStackEnvManager('Breakout-v0', preprocess=preprocess, frame_stack_size=stack_size)
         self.assertEqual(0, len(env.frames))
-        self.assertEqual(env.processed_screen(env.get_raw_screen()).shape, torch.Size(img_size))
         env.reset()
+        self.assertEqual(env.state()[0].shape, torch.Size(img_size))
         self.assertEqual(env.state().shape[0], stack_size)
         
     def test_env_manager_reset(self):
-        env = FrameStackEnvManager('Pong-v0', frame_stack_size=4)
+        env = FrameStackEnvManager('Pong-v0', preprocess=preprocess, frame_stack_size=4)
         state = env.reset()
         # All frames in the stack is similar
         self.assertTrue(torch.equal(state[0], state[1]))
         self.assertTrue(torch.equal(state[1], state[2]))
         self.assertTrue(torch.equal(state[2], state[3]))
         
-    def test_env_manager_processed_screen(self):
-        env = FrameStackEnvManager('Pong-v0')
-        raw_screen = env.env.render('rgb_array')
-        processed_screen = env.processed_screen(raw_screen)
-        self.assertEqual(2, processed_screen.ndim) # Convert RGB to Gray
-        
     def test_env_manager_state(self):
         frame_stack_size = 5
-        env = FrameStackEnvManager('Breakout-v0', 'cpu', frame_stack_size=frame_stack_size)
+        env = FrameStackEnvManager('Breakout-v0', preprocess=preprocess, frame_stack_size=frame_stack_size)
         env.reset()
         state = env.state()
         self.assertEqual(frame_stack_size, state.shape[0])
         
     def test_env_manager_step(self):
-        env = FrameStackEnvManager('Pong-v0')
+        env = FrameStackEnvManager('Pong-v0', preprocess=preprocess)
         start_state = env.reset()
         next_state, _, _, _ = env.step(env.action_space.sample())
         new_frame = env.env.render('rgb_array')
         new_frame = cv2.cvtColor(new_frame, cv2.COLOR_RGB2GRAY)
-        new_frame = cv2.resize(new_frame, DEFAULT_IMAGE_SIZE)
+        new_frame = cv2.resize(new_frame, img_size, interpolation=cv2.INTER_NEAREST)
         new_frame = torch.tensor(new_frame).float()
         self.assertTrue(torch.equal(next_state[0], start_state[1]))
         self.assertTrue(torch.equal(next_state[1], start_state[2]))
@@ -50,7 +52,7 @@ class FrameStackEnvManagerTest(unittest.TestCase):
         next_state2, _, _, _ = env.step(env.action_space.sample())
         new_frame = env.env.render('rgb_array')
         new_frame = cv2.cvtColor(new_frame, cv2.COLOR_RGB2GRAY)
-        new_frame = cv2.resize(new_frame, DEFAULT_IMAGE_SIZE)
+        new_frame = cv2.resize(new_frame, img_size, interpolation=cv2.INTER_NEAREST)
         new_frame = torch.tensor(new_frame).float()
         self.assertTrue(torch.equal(next_state2[0], next_state[1]))
         self.assertTrue(torch.equal(next_state2[1], next_state[2]))
@@ -61,7 +63,7 @@ class FrameStackEnvManagerTest(unittest.TestCase):
         next_state4, _, _, _ = env.step(env.action_space.sample())
         new_frame = env.env.render('rgb_array')
         new_frame = cv2.cvtColor(new_frame, cv2.COLOR_RGB2GRAY)
-        new_frame = cv2.resize(new_frame, DEFAULT_IMAGE_SIZE)
+        new_frame = cv2.resize(new_frame, img_size, interpolation=cv2.INTER_NEAREST)
         new_frame = torch.tensor(new_frame).float()
         self.assertTrue(torch.equal(next_state4[0], next_state[3]))
         self.assertTrue(torch.equal(next_state4[1], next_state2[3]))
