@@ -19,13 +19,12 @@ network_schema = {
                     'output': LinearSchema(32, 2)
                  }
 
-evaluator = GymFitnessEvaluator(env_name='CartPole-v0', num_episodes=num_episodes_eval, 
-                                max_iterations=500, visualize=False)
+evaluator = GymFitnessEvaluator(EnvironmentManager, env_name='CartPole-v0')
 ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, 
               selection_pressure=0.1, mutation_prob=0.01, mutation_power=0.02, crossover_prob=0.5)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
 
-solution = ga.run(populations=init_populations, num_generations=20, num_workers=4, run_mode='multiprocess')
+solution = ga.run(populations=init_populations, num_generations=20, num_episodes_eval=3, num_workers=4, run_mode='multiprocess')
 
 num_episodes = 10
 env = EnvironmentManager('CartPole-v0')
