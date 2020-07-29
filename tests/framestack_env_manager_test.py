@@ -22,12 +22,14 @@ class FrameStackEnvManagerTest(unittest.TestCase):
         self.assertEqual(env.state().shape[0], stack_size)
         
     def test_env_manager_reset(self):
-        env = FrameStackEnvManager('Pong-v0', preprocess=preprocess, frame_stack_size=4)
+        env = FrameStackEnvManager('CartPole-v0', preprocess=preprocess, frame_stack_size=4)
         state = env.reset()
+        screen = torch.tensor(preprocess(env.render('rgb_array'))).float()
         # All frames in the stack is similar
-        self.assertTrue(torch.equal(state[0], state[1]))
-        self.assertTrue(torch.equal(state[1], state[2]))
-        self.assertTrue(torch.equal(state[2], state[3]))
+        self.assertTrue(torch.equal(state[0], screen))
+        self.assertTrue(torch.equal(state[1], screen))
+        self.assertTrue(torch.equal(state[2], screen))
+        self.assertTrue(torch.equal(state[3], screen))
         
     def test_env_manager_state(self):
         frame_stack_size = 5

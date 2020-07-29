@@ -17,6 +17,7 @@ class FrameStackEnvManager(EnvironmentManager):
     def reset(self):
         self.env.reset()
         screen = self.get_raw_screen()
+        screen = self.get_raw_screen() # Need to call render twice due to OpenAI Gym bug
         screen = self.preprocess(screen)
         for _ in range(self.frames.maxlen): self.frames.append(screen)
         return self.state()
@@ -32,4 +33,5 @@ class FrameStackEnvManager(EnvironmentManager):
         return (self.state(), torch.tensor([reward]), self.done, _)
     
     def get_raw_screen(self):
-        return self.env.render('rgb_array')
+        raw_screen = self.env.render('rgb_array')
+        return raw_screen
