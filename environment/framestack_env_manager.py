@@ -15,9 +15,7 @@ class FrameStackEnvManager(EnvironmentManager):
         self.preprocess = preprocess
         
     def reset(self):
-        self.env.reset()
-        screen = self.get_raw_screen()
-        screen = self.get_raw_screen() # Need to call render twice due to OpenAI Gym bug
+        screen = self.env.reset()
         screen = self.preprocess(screen)
         for _ in range(self.frames.maxlen): self.frames.append(screen)
         return self.state()
@@ -26,8 +24,7 @@ class FrameStackEnvManager(EnvironmentManager):
         return torch.from_numpy(np.stack(self.frames)).float().to(self.device)
     
     def step(self, action):
-        _, reward, self.done, _ = self.env.step(action)
-        screen = self.get_raw_screen()
+        screen, reward, self.done, _ = self.env.step(action)
         screen = self.preprocess(screen)
         self.frames.append(screen)
         return (self.state(), torch.tensor([reward]), self.done, _)
