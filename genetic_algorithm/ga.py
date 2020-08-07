@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import random
 
 from genetic_algorithm.opetators import *
 from model.genetic_network import GeneticNetwork
@@ -39,4 +40,5 @@ class SimpleGA(GeneticAlgorithm):
         crossover_populations = gen_population_crossover(elites, n=int(self.num_populations / 2))
         new_generation.extend(mutation_populations)
         new_generation.extend(crossover_populations)
+        random.shuffle(new_generation)
         return new_generation

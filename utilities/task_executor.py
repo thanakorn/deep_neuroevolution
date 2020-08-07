@@ -36,7 +36,7 @@ def execute_multiprocess(f, args, num_workers, pbar=None):
     PROCESS_POOL = Pool(processes=num_workers) if PROCESS_POOL is None else PROCESS_POOL
     p = PROCESS_POOL
     results = []
-    for result in p.starmap(f, args, chunksize=num_workers):
+    for result in p.starmap(f, args):
         results.append(result)
         if pbar is not None: pbar.update()
     return results
