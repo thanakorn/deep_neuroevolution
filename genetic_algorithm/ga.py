@@ -32,7 +32,7 @@ class GeneticAlgorithm():
         raise NotImplementedError()
 
 class SimpleGA(GeneticAlgorithm):     
-    def new_generation(self, old_gen, fitnesses):
+    def new_generation(self, old_gen, fitnesses, *args):
         num_elites = int(self.selection_pressure * self.num_populations)
         elites = select_elites(old_gen, fitnesses, num_elites)
         new_generation = [elites[-1]] # Best model survives and is carried to next gen

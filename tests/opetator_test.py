@@ -63,10 +63,14 @@ class OpetatorTest(unittest.TestCase):
         random_generator = RandomGenerator()
         cross_idx = [3, 11, 9, 0, 1, 6, 5]
         random_generator.randint = Mock(return_value=cross_idx)
-        c = crossover(a, b, random_generator)
+        c1, c2 = crossover(a, b, random_generator)
         for i in range(len(a.genes)):
-            if i in cross_idx: self.assertTrue(torch.equal(b.genes[i], c.genes[i]))
-            else: self.assertTrue(torch.equal(a.genes[i], c.genes[i]))
+            if i in cross_idx: 
+                self.assertTrue(torch.equal(b.genes[i], c1.genes[i]))
+                self.assertTrue(torch.equal(a.genes[i], c2.genes[i]))
+            else: 
+                self.assertTrue(torch.equal(a.genes[i], c1.genes[i]))
+                self.assertTrue(torch.equal(b.genes[i], c2.genes[i]))
             
     def test_num_genes_crossover(self):
         schema = {
@@ -77,12 +81,20 @@ class OpetatorTest(unittest.TestCase):
         a = TensorGenotype(schema)
         b = TensorGenotype(schema)
         random_generator = NPRandomGenerator()
-        c = crossover(a, b, random_generator)
+        c1, c2 = crossover(a, b, random_generator)
         num_genes_from_a = 0
         num_genes_from_b = 0
         for i in range(len(a.genes)):
-            if torch.equal(a.genes[i], c.genes[i]): num_genes_from_a += 1
-            elif torch.equal(b.genes[i], c.genes[i]): num_genes_from_b += 1
+            if torch.equal(a.genes[i], c1.genes[i]): num_genes_from_a += 1
+            elif torch.equal(b.genes[i], c1.genes[i]): num_genes_from_b += 1
+        self.assertEqual(int(0.5 * len(a.genes)), num_genes_from_a)
+        self.assertEqual(int(0.5 * len(b.genes)), num_genes_from_b)
+        
+        num_genes_from_a = 0
+        num_genes_from_b = 0
+        for i in range(len(a.genes)):
+            if torch.equal(a.genes[i], c2.genes[i]): num_genes_from_a += 1
+            elif torch.equal(b.genes[i], c2.genes[i]): num_genes_from_b += 1
         self.assertEqual(int(0.5 * len(a.genes)), num_genes_from_a)
         self.assertEqual(int(0.5 * len(b.genes)), num_genes_from_b)
     
