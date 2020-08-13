@@ -22,11 +22,13 @@ def mutate(genotype: NetworkGenotype, random_generator: RandomGenerator, mutatio
     return child
 
 def crossover(a: NetworkGenotype, b:NetworkGenotype, random_generator: RandomGenerator) -> NetworkGenotype:
-    c = a.clone()
+    c1, c2 = a.clone(), b.clone()
     gene_length = len(a.genes)
     idx_to_cross = random_generator.randint(gene_length, int(0.5 * gene_length)) # Uniform crossover w. 50% of genes from each parent
-    for i in idx_to_cross: c.genes[i] = b.genes[i]
-    return c
+    for i in idx_to_cross: 
+        c1.genes[i] = b.genes[i]
+        c2.genes[i] = a.genes[i]
+    return (c1, c2)
 
 def gen_population_mutation(parents: List[NetworkGenotype], n, mutation_rate=0.01, mutation_power=1.):
     new_generation = []
@@ -39,8 +41,10 @@ def gen_population_crossover(parents: List[NetworkGenotype], n):
     assert len(parents) >= 2, "Number of parents must be more than 2"
     new_generation = []
     num_parents = len(parents)
-    for i in range(n):
+    for i in range(int(n / 2) + 1):
         a, b = np.random.randint(0, num_parents, 2)
         while a == b: a, b = np.random.randint(0, num_parents, 2)
-        new_generation.append(crossover(parents[a], parents[b], random_generator))
-    return new_generation
+        c1, c2 = crossover(parents[a], parents[b], random_generator)
+        new_generation.append(c1)
+        new_generation.append(c2)
+    return new_generation[0:n]

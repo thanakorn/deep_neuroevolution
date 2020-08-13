@@ -5,7 +5,7 @@ import numpy as np
 
 from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.network_schema import *
-from genetic_algorithm.ga import SimpleGA
+from genetic_algorithm.crowding_ga import DeterministicCrowdingGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
 
@@ -19,7 +19,7 @@ env_id = 'gym_image_maze:ImageMaze-v0'
 num_actions = 5
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 frame_stack_size = 1
-num_populations = 100
+num_populations = 50
 num_episodes_eval = 1
 
 network_schema = {
@@ -35,11 +35,11 @@ network_schema = {
 
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_uniform_) for i in range(num_populations)]
-ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, 
+ga = DeterministicCrowdingGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, 
               mutation_prob=1.0, mutation_power=0.002, crossover_prob=0.5)
 
 ray.init()
-solution = ga.run(populations=init_populations, num_generations=200, num_workers=4, max_iterations=150, run_mode='multiprocess', visualize=False)
+solution = ga.run(populations=init_populations, num_generations=500, num_workers=4, max_iterations=150, run_mode='multiprocess', visualize=False)
 ray.shutdown()
 
 controller = solution.to_network()
