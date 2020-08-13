@@ -24,3 +24,17 @@ class EnvironmentManagerTest(unittest.TestCase):
         self.assertEqual(next_state.dtype, torch.float)
         self.assertTrue(isinstance(reward, float))
         self.assertTrue(isinstance(done, bool))
+        
+    def test_env_manager_samples(self):
+        env = EnvironmentManager('gym_image_maze:ImageMaze-v0')
+        env.reset()
+        samples = env.samples(10)
+        h, w = env.input_dim()
+        self.assertEqual(torch.Size((10, h, w)), samples.shape)
+        
+        env = EnvironmentManager('CartPole-v0')
+        env.reset()
+        samples = env.samples(10)
+        dim = env.input_dim()[0]
+        self.assertEqual(torch.Size((10, dim)), samples.shape)
+        

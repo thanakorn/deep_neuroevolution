@@ -1,5 +1,6 @@
 import gym
 import torch
+import numpy as np
 
 class EnvironmentManager(gym.Wrapper):
     def __init__(self, env_name, device='cpu'):
@@ -21,3 +22,9 @@ class EnvironmentManager(gym.Wrapper):
     
     def input_dim(self):
         return self.observation_space.shape
+    
+    def samples(self, n):
+        samples = []
+        for i in range(n):
+            samples.append(self.env.observation_space.sample())
+        return torch.tensor(np.stack(samples, axis=0), dtype=torch.float, device=self.device)
