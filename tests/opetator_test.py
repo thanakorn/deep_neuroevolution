@@ -78,8 +78,9 @@ class OpetatorTest(unittest.TestCase):
             'fc': LinearSchema(128, 5),
             'out': LinearSchema(5, 2)
         }
-        a = TensorGenotype(schema)
-        b = TensorGenotype(schema)
+        random_generator = NPRandomGenerator()
+        a = mutate(TensorGenotype(schema), random_generator, 1.0, 0.1)
+        b = mutate(TensorGenotype(schema), random_generator, 1.0, 0.1)
         random_generator = NPRandomGenerator()
         c1, c2 = crossover(a, b, random_generator)
         num_genes_from_a = 0

@@ -16,20 +16,26 @@ class DeterministicCrowdingGA(GeneticAlgorithm):
             populations = new_gen
         return solution
     
-    def new_generation(self, old_gen, fitnesses, *args):
+    def gen_offsprings(self, parents):
         offsprings = []
-        gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize = args
-        for p1, p2 in zip(old_gen[0::2], old_gen[1::2]):
+        for p1, p2 in zip(parents[0::2], parents[1::2]):
             c1, c2 = crossover(p1, p2, random_generator)
             offsprings.append(mutate(c1, random_generator, self.mutation_prob, self.mutation_power))
             offsprings.append(mutate(c2, random_generator, self.mutation_prob, self.mutation_power))
-        offspring_fitnesses = calculate_fitnesses(offsprings, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
-        
+        return offsprings
+    
+    def replace_parents(self, parents, parent_fitnesses, offsprings, offspring_fitnesses):
         new_generation = []
         for i in range(self.num_populations):
-            new_pop = old_gen[i] if fitnesses[i] > offspring_fitnesses[i] else offsprings[i] # Offspring i is a child of population i
-            new_generation.append(new_pop)
-        
+            p = parents[i] if parent_fitnesses[i] > offspring_fitnesses[i] else offsprings[i] # Offspring i is a child of population i
+            new_generation.append(p)
+        return new_generation
+    
+    def new_generation(self, old_gen, fitnesses, *args):
+        gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize = args
+        offsprings = self.gen_offsprings(old_gen)
+        offspring_fitnesses = calculate_fitnesses(offsprings, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
+        new_generation = self.replace_parents(old_gen, fitnesses, offsprings, offspring_fitnesses)
         random.shuffle(new_generation)
         return new_generation
     

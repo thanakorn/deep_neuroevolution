@@ -3,7 +3,6 @@ from genetic_algorithm.ga import SimpleGA
 from genetic_algorithm.fitness_evaluator import FitnessEvaluator
 from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.network_schema import *
-from model.dqn import DQN
 
 schema = {
     'conv': ConvSchema(1, 16, 3, 4),
@@ -18,4 +17,3 @@ class GATest(unittest.TestCase):
         new_gen = ga.new_generation(old_gen, fitnesses)
         self.assertEqual(len(new_gen), ga.num_populations)
         self.assertTrue(old_gen[5] in new_gen) # Best individual survive
-        self.assertTrue(True)
