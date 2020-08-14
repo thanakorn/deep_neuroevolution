@@ -2,10 +2,10 @@ import torch
 from collections import deque
 from utilities.random_generator import NPRandomGenerator
 
-random_generator = NPRandomGenerator()
+default_random_generator = NPRandomGenerator()
 
 class ReplayMemory:
-    def __init__(self, memory_size=20000, random_generator=random_generator):
+    def __init__(self, memory_size=20000, random_generator=default_random_generator):
         self.memory = deque([], memory_size)
         self.random_generator = random_generator
         
@@ -14,7 +14,7 @@ class ReplayMemory:
         
     def sample(self, n):
         assert n <= len(self.memory), "Not enough replay memory"
-        sample_idx = random_generator.randint(len(self.memory), n)
+        sample_idx = self.random_generator.randint(len(self.memory), n)
         samples = [self.memory[i] for i in sample_idx]
         return torch.stack(samples, dim=0)
         
