@@ -9,8 +9,8 @@ from environment.environment_manager import EnvironmentManager
 DEFAULT_IMAGE_SIZE  = (84, 84)
 
 class FrameStackEnvManager(EnvironmentManager):
-    def __init__(self, env_name, preprocess, device='cpu', frame_stack_size=4):
-        super().__init__(env_name, device)
+    def __init__(self, env_name, preprocess, device='cpu', frame_stack_size=4, replay_memory=None):
+        super().__init__(env_name, device, replay_memory)
         self.frames = deque([], maxlen=frame_stack_size)
         self.preprocess = preprocess
         
@@ -27,7 +27,9 @@ class FrameStackEnvManager(EnvironmentManager):
         screen, reward, self.done, _ = self.env.step(action)
         screen = self.preprocess(screen)
         self.frames.append(screen)
-        return (self.state(), torch.tensor([reward]), self.done, _)
+        next_state = self.state()
+        if self.replay_memory is not None: self.replay_memory.add(next_state)
+        return (next_state, torch.tensor([reward]), self.done, _)
     
     def get_raw_screen(self):
         raw_screen = self.env.render('rgb_array')
