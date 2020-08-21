@@ -8,13 +8,16 @@ from genetic_algorithm.opetators import random_generator
 
 class DeterministicCrowdingGA(GeneticAlgorithm):    
     def run(self, populations, num_generations, max_iterations=None, num_episodes_eval=1, visualize=False, num_workers=None, run_mode=None):
+        avg_fitnesses, max_fitnesses = [], []
         solution = None
         for gen in range(num_generations):
             fitnesses = calculate_fitnesses(populations, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
+            avg_fitnesses.append(fitnesses.mean())
+            max_fitnesses.append(fitnesses.max())
             solution = populations[fitnesses.argmax()]
             new_gen = self.new_generation(populations, fitnesses, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
             populations = new_gen
-        return solution
+        return solution, LearningInfo(avg_fitnesses, max_fitnesses)
     
     def gen_offsprings(self, parents):
         offsprings = []
