@@ -2,6 +2,7 @@ import unittest
 import torch
 import cv2
 import numpy as np
+import ray
 from environment.framestack_env_manager import FrameStackEnvManager, DEFAULT_IMAGE_SIZE
 from memory.replay_memory import ReplayMemory
 
@@ -74,9 +75,11 @@ class FrameStackEnvManagerTest(unittest.TestCase):
         self.assertTrue(torch.equal(next_state4[3], new_frame))
         
     def test_env_manager_replay_memory(self):
+        ray.init()
         memory = ReplayMemory()
         env = FrameStackEnvManager('Pong-v0', preprocess=preprocess, replay_memory=memory)
         env.reset()
         for i in range(10): env.step(env.action_space.sample())
         self.assertEqual(len(memory.memory), 10)
+        ray.shutdown()
             
