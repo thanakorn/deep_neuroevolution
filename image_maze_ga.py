@@ -9,7 +9,6 @@ from genetic_algorithm.network_schema import *
 from genetic_algorithm.ga import SimpleGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
-from memory.replay_memory import ReplayMemory
 from utilities.evaluation_logger import EvaluationLogger
 
 def preprocess(screen):
@@ -43,7 +42,7 @@ ray.init()
 eval_logger = EvaluationLogger(get_log_data)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_uniform_) for i in range(num_populations)]
-ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, 
+ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.2, 
               mutation_prob=1.0, mutation_power=0.001, crossover_prob=0.5)
 num_generations = 500
 solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, run_mode='multiprocess', visualize=False)
@@ -61,8 +60,7 @@ heatmap = np.zeros((64, 64))
 for x,y in positions_log: heatmap[y][x] += 1
 plt.figure()
 plt.axis('off')
-# plt.imshow(heatmap, cmap=plt.cm.RdBu, interpolation='gaussian')
-plt.imshow(heatmap, cmap='hot', interpolation='gaussian')
+plt.imshow(heatmap, cmap=plt.cm.YlOrRd, interpolation='gaussian')
 plt.colorbar()
 plt.savefig(f'{env_id.split(":")[1]}_ga_heatmap.png')
 

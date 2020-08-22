@@ -2,18 +2,23 @@ import gym
 import torch
 import ray
 import numpy as np
+import matplotlib.pyplot as plt
 
 from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.network_schema import *
 from genetic_algorithm.crowding_ga import DeterministicCrowdingGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
+from utilities.evaluation_logger import EvaluationLogger
 
 def preprocess(screen):
     screen[screen < 255] = 0
     screen = screen / screen.max()
     screen = np.ascontiguousarray(screen)
     return screen
+
+def get_log_data(env):
+    return env.maze.robot.position
 
 env_id = 'gym_image_maze:ImageMaze-v0'
 num_actions = 5
@@ -33,13 +38,32 @@ network_schema = {
                     'output': LinearSchema(32, num_actions)
                  }
 
-evaluator = GymFitnessEvaluator(FrameStackEnvManager, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
+ray.init()
+eval_logger = EvaluationLogger(get_log_data)
+evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_uniform_) for i in range(num_populations)]
 ga = DeterministicCrowdingGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, 
-              mutation_prob=1.0, mutation_power=0.002, crossover_prob=0.5)
+              mutation_prob=0.8, mutation_power=0.001, crossover_prob=0.5)
+num_generations = 10
+solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=150, run_mode='multiprocess', visualize=False)
 
-ray.init()
-solution = ga.run(populations=init_populations, num_generations=500, num_workers=4, max_iterations=150, run_mode='multiprocess', visualize=False)
+# Learning curve
+plt.figure()
+plt.plot(range(num_generations), info.avg_fitnesses, label='AVG_FITNESS')
+plt.plot(range(num_generations), info.max_fitnesses, color='red', label='MAX_FITNESS')
+plt.legend()
+plt.savefig(f'{env_id.split(":")[1]}_crowding.png')
+positions_log = eval_logger.get_data()
+heatmap = np.zeros((64, 64))
+
+# Heatmap
+for x,y in positions_log: heatmap[y][x] += 1
+plt.figure()
+plt.axis('off')
+plt.imshow(heatmap, cmap=plt.cm.YlOrRd, interpolation='gaussian')
+plt.colorbar()
+plt.savefig(f'{env_id.split(":")[1]}_crowding_heatmap.png')
+
 ray.shutdown()
 
 controller = solution.to_network()

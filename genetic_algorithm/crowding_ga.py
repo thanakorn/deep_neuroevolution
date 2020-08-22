@@ -4,6 +4,7 @@ from genetic_algorithm.ga import GeneticAlgorithm
 from genetic_algorithm.opetators import crossover, mutate
 from utilities.random_generator import NPRandomGenerator
 from utilities.ga_helpers import calculate_fitnesses
+from utilities.learning_info import LearningInfo
 from genetic_algorithm.opetators import random_generator
 
 class DeterministicCrowdingGA(GeneticAlgorithm):    
