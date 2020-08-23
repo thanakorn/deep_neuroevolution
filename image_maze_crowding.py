@@ -43,8 +43,8 @@ eval_logger = EvaluationLogger(get_log_data)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_uniform_) for i in range(num_populations)]
 ga = DeterministicCrowdingGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, 
-              mutation_prob=0.8, mutation_power=0.001, crossover_prob=0.5)
-num_generations = 10
+              mutation_prob=1.0, mutation_power=0.001, crossover_prob=0.5)
+num_generations = 2000
 solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=150, run_mode='multiprocess', visualize=False)
 
 # Learning curve
@@ -57,10 +57,10 @@ positions_log = eval_logger.get_data()
 heatmap = np.zeros((64, 64))
 
 # Heatmap
-for x,y in positions_log: heatmap[y][x] += 1
+for x,y in positions_log: heatmap[y][x] = min(heatmap[y][x] + 1, 500)
 plt.figure()
 plt.axis('off')
-plt.imshow(heatmap, cmap=plt.cm.YlOrRd, interpolation='gaussian')
+plt.imshow(heatmap, cmap=plt.cm.Reds, interpolation='gaussian')
 plt.colorbar()
 plt.savefig(f'{env_id.split(":")[1]}_crowding_heatmap.png')
 
