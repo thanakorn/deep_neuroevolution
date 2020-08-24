@@ -6,6 +6,7 @@ from genetic_algorithm.genotype import NetworkGenotype
 from environment.environment_manager import EnvironmentManager
 from model.genetic_network import GeneticNetwork
 from itertools import count
+from utilities.evaluation_logger import EvaluationLogger
 
 T = TypeVar('T', GeneticNetwork, GeneticNetwork)
 
@@ -14,8 +15,9 @@ class FitnessEvaluator:
         raise NotImplementedError()
     
 class GymFitnessEvaluator(FitnessEvaluator):
-    def __init__(self, env_manger: EnvironmentManager, **env_args):
+    def __init__(self, env_manger: EnvironmentManager, logger: EvaluationLogger = None, **env_args):
         self.env_manger = env_manger
+        self.logger = logger
         self.env_args = env_args
         
     def eval_fitness(self, genotype: NetworkGenotype, max_iterations, num_episodes=1, visualize=False):
@@ -38,6 +40,7 @@ class GymFitnessEvaluator(FitnessEvaluator):
                     num_iterations += 1
                 
                 fitness += total_reward / float(num_episodes)
+                if self.logger is not None: self.logger.log_data(env)
         
         env.close()
         return fitness
