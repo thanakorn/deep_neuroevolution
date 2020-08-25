@@ -12,7 +12,7 @@ THREAD_POOL = None
 def execute(f, args, pbar=None):
     results = []
     for arg in args:
-        result = f(arg)
+        result = f(*arg)
         results.append(result)
         if pbar is not None : pbar.update()
     return results

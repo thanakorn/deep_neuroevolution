@@ -15,4 +15,9 @@ def calculate_fitnesses(populations: List[NetworkGenotype], evaluator: FitnessEv
         fitnesses = np.array(fitnesses)
         pbar.set_postfix(max_f=fitnesses.max(), min_f=fitnesses.min(), avg_f=fitnesses.mean())
     return np.array(fitnesses)
-    
+
+def compute_q_values(policies, states, num_workers=None):
+    get_trajectory = lambda policy, s: policy(s)
+    eval_arguments = [(p, s) for p, s in list(zip(policies, repeat(states)))]
+    q_values = concurrent_execute(get_trajectory, eval_arguments, mode='multiprocess', num_workers=num_workers) if num_workers is not None else execute(get_trajectory, eval_arguments)
+    return q_values

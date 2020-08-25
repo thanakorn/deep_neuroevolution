@@ -23,7 +23,7 @@ num_generations = 30
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
 replay_memory = ReplayMemory()
-diversity_evaluator = TrajectoryDiversityEvaluator(replay_memory, num_samples=16)
+diversity_evaluator = TrajectoryDiversityEvaluator(replay_memory, num_samples=16, num_workers=4)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size, replay_memory=replay_memory)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
 ga = DiversityPromotedGA(num_populations=num_populations,fitness_evaluator=evaluator, diversity_evaluator=diversity_evaluator, mutation_prob=0.2, mutation_power=0.002, crossover_prob=0.5)
