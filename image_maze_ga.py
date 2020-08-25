@@ -15,15 +15,15 @@ from utilities.image_maze_experiment import preprocess, get_log_data, num_action
 sns.set(style='darkgrid')
 
 env_id = 'gym_image_maze:ImageMaze-v0'
-num_populations = 60
-num_generations = 30
+num_populations = 100
+num_generations = 25
 
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
-ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, mutation_prob=0.2, mutation_power=0.002, crossover_prob=0.5)
-solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=150, run_mode='multiprocess', visualize=False)
+ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, mutation_prob=1.0, mutation_power=0.002, crossover_prob=0.5)
+solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=50, run_mode='multiprocess', visualize=False)
 
 evaluation_log = eval_logger.get_data()
 ray.shutdown()
@@ -35,8 +35,10 @@ distances_log = [-1 * dis for _, dis in evaluation_log]
 avg_dist = [np.mean(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
 max_dist = [np.max(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
 plt.figure()
+plt.hlines(0, 0, num_generations, linestyles='dashed', label='GOAL')
 plt.plot(range(num_generations), avg_dist, label='AVG')
 plt.plot(range(num_generations), max_dist, color='red', label='BEST')
+plt.ylim(top=3)
 plt.xlabel('Generation')
 plt.ylabel('Distance to Goal(Negative)')
 plt.legend()

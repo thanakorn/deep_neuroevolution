@@ -35,8 +35,10 @@ distances_log = [-1 * dis for _, dis in evaluation_log]
 avg_dist = [np.mean(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
 max_dist = [np.max(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
 plt.figure()
+plt.hlines(0, 0, num_generations, linestyles='dashed', label='GOAL')
 plt.plot(range(num_generations), avg_dist, label='AVG')
 plt.plot(range(num_generations), max_dist, color='red', label='BEST')
+plt.ylim(top=3)
 plt.xlabel('Generation')
 plt.ylabel('Distance to Goal(Negative)')
 plt.legend()
