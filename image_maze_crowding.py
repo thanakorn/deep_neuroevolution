@@ -36,7 +36,7 @@ avg_dist = [np.mean(distances_log[i:(i + 1) * num_populations]) for i in range(n
 max_dist = [np.max(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
 plt.figure()
 plt.plot(range(num_generations), avg_dist, label='AVG')
-plt.plot(range(num_generations), max_dist, color='red', label='MAX')
+plt.plot(range(num_generations), max_dist, color='red', label='BEST')
 plt.xlabel('Generation')
 plt.ylabel('Distance to Goal(Negative)')
 plt.legend()
@@ -46,7 +46,7 @@ plt.savefig(f'./resources/{env_id.split(":")[1]}_crowding.png')
 bg_img = f'{env_id.split(":")[1].split("-")[1]}'
 bg = cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (64, 64))
 heatmap = np.zeros((64, 64))
-for x,y in positions_log: heatmap[y][x] = min(heatmap[y][x] + 1, 500)
+for x,y in positions_log: heatmap[y][x] = min(heatmap[y][x] + 1, 350)
 plt.figure()
 plt.axis('off')
 plt.imshow(bg)
