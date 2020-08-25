@@ -1,7 +1,8 @@
 import unittest
 import torch
+import ray
 
-from genetic_algorithm.diversity_evaluator import BehaviourDiversityEvaluator
+from genetic_algorithm.diversity_evaluator import TrajectoryDiversityEvaluator
 from memory.replay_memory import ReplayMemory
 from genetic_algorithm.genotype import TensorGenotype
 from genetic_algorithm.network_schema import *
@@ -13,19 +14,32 @@ schema = {
             'flatten': ActivationSchema('Flatten'),
             'output': LinearSchema(36,3)
          }
-memory = ReplayMemory(memory_size=32)
+global memory
+memory = None
 populations = [TensorGenotype(schema) for i in range(4)]
-
-for i in range(32): memory.add(torch.rand(8, 8).unsqueeze(0))
     
 class DiversityEvaluatorTest(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        global memory
+        ray.init()
+        memory = ReplayMemory(memory_size=32)
+        for i in range(32): memory.add(torch.rand(8, 8).unsqueeze(0))
+      
+    @classmethod  
+    def tearDownClass(cls):
+        ray.shutdown()
+    
     def test_diversity_evaluator_init(self):
-        evaluator = BehaviourDiversityEvaluator(memory, 8)
+        global memory
+        evaluator = TrajectoryDiversityEvaluator(memory, 8)
         self.assertEqual(evaluator.replay_memory, memory)
         self.assertEqual(evaluator.num_samples, 8)
         
     def test_diversity_evaluator_compute_trajectory(self):
-        evaluator = BehaviourDiversityEvaluator(memory, 8)
+        global memory
+        evaluator = TrajectoryDiversityEvaluator(memory, 8)
         samples = memory.sample(5)
         trajectories = evaluator.compute_trajectory([p.to_network() for p in populations], samples)
         
@@ -41,13 +55,17 @@ class DiversityEvaluatorTest(unittest.TestCase):
         mem_idx = [0, 3, 5, 11, 1, 18, 20, 2]
         random_generator.randint = Mock(return_value=mem_idx)
         replay_memory = ReplayMemory(32, random_generator)
-        for i in range(32): replay_memory.add(torch.rand(8, 8).unsqueeze(0))
+        replay_memory_2 = ReplayMemory(32, random_generator)
+        for i in range(32):
+            s = torch.rand(8, 8).unsqueeze(0)
+            replay_memory.add(s)
+            replay_memory_2.add(s)
         
-        evaluator = BehaviourDiversityEvaluator(replay_memory, 8)
+        evaluator = TrajectoryDiversityEvaluator(replay_memory, 8)
         diversity_scores = evaluator.eval_diversity(populations)
         self.assertEqual(len(diversity_scores), len(populations))
         
-        trajectories = evaluator.compute_trajectory([p.to_network() for p in populations], replay_memory.sample(8))
+        trajectories = evaluator.compute_trajectory([p.to_network() for p in populations], replay_memory_2.sample(8))
         for i in range(trajectories.shape[0]):
             score = 0
             for j in range(trajectories.shape[0]):
