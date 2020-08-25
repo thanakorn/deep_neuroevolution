@@ -11,7 +11,7 @@ class ReplayMemory:
         self.random_generator = random_generator
         
     def add(self, data, block=False):
-        if self.memory.full(): self.memory.get()
+        if self.memory.full(): self.memory.get(True)
         self.memory.put(data, block)
         
     def sample(self, n):
