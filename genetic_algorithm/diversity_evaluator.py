@@ -12,7 +12,7 @@ class DiversityEvaluator:
     def eval_diversity(self, populations: List[NetworkGenotype]) -> List[float]:
         raise NotImplementedError()
     
-class BehaviourDiversityEvaluator(DiversityEvaluator):
+class TrajectoryDiversityEvaluator(DiversityEvaluator):
     def __init__(self, replay_memory: ReplayMemory, num_samples=16):
         self.replay_memory = replay_memory
         self.num_samples = num_samples
@@ -22,8 +22,15 @@ class BehaviourDiversityEvaluator(DiversityEvaluator):
         trajectories = q_values.argmax(dim=2)
         return trajectories
     
-    def eval_diversity(self, populations: List[NetworkGenotype]) -> List[float]:
+    def eval_diversity(self, populations: List[NetworkGenotype]):
         state_samples = self.replay_memory.sample(self.num_samples)
         trajectories = self.compute_trajectory([p.to_network() for p in populations], state_samples)
         diversity_scores = [(trajectories != trajectories[i]).sum().item() for i in range(len(populations))]
         return diversity_scores
+    
+class FinalPosDiversityEvaluator(DiversityEvaluator):
+    def __init__(self):
+        pass
+    
+    def eval_diversity(self, populations: List[NetworkGenotype]):
+        pass
