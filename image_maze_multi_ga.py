@@ -22,7 +22,7 @@ num_generations = 30
 
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
-replay_memory = ReplayMemory()
+replay_memory = ReplayMemory(memory_ratio=0.05)
 diversity_evaluator = TrajectoryDiversityEvaluator(replay_memory, num_samples=16, num_workers=4)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size, replay_memory=replay_memory)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]

@@ -54,6 +54,7 @@ class DiversityEvaluatorTest(unittest.TestCase):
         random_generator = RandomGenerator()
         mem_idx = [0, 3, 5, 11, 1, 18, 20, 2]
         random_generator.randint = Mock(return_value=mem_idx)
+        random_generator.rand= Mock(return_value=0.)
         replay_memory = ReplayMemory(32, random_generator)
         replay_memory_2 = ReplayMemory(32, random_generator)
         for i in range(32):

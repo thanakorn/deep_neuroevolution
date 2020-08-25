@@ -6,13 +6,14 @@ from ray.experimental.queue import Queue
 default_random_generator = NPRandomGenerator()
 
 class ReplayMemory:
-    def __init__(self, memory_size=20000, random_generator=default_random_generator):
+    def __init__(self, memory_size=20000, random_generator=default_random_generator, memory_ratio=1.0):
         self.memory = Queue(maxsize=memory_size)
         self.random_generator = random_generator
+        self.memory_ratio = memory_ratio
         
     def add(self, data, block=False):
         if self.memory.full(): self.memory.get(True)
-        self.memory.put(data, block)
+        if self.random_generator.rand() < self.memory_ratio: self.memory.put(data, block)
         
     def sample(self, n):
         assert n <= self.memory.size(), "Not enough replay memory"
