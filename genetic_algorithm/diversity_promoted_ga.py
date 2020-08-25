@@ -1,5 +1,6 @@
 import numpy as np
 import random
+
 from genetic_algorithm.ga import GeneticAlgorithm
 from genetic_algorithm.opetators import *
 from utilities.pareto_solution import find_pareto
@@ -17,7 +18,7 @@ class DiversityPromotedGA(GeneticAlgorithm):
         diversity_scores = self.diversity_evaluator.eval_diversity(old_gen)
         non_dominated_idx = find_pareto([fitnesses, diversity_scores])
         elites = [old_gen[i] for i in non_dominated_idx]
-        new_generation = [elites[np.argmax(fitnesses)]] # Best model survives
+        new_generation = [old_gen[np.argmax(fitnesses)]] # Best model survives
         mutation_populations = gen_population_mutation(elites, n=int(self.num_populations / 2) - 1, mutation_rate=self.mutation_prob, mutation_power=self.mutation_power)
         crossover_populations = gen_population_crossover(elites, n=int(self.num_populations / 2))
         new_generation.extend(mutation_populations)

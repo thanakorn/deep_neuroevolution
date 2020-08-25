@@ -25,5 +25,5 @@ class BehaviourDiversityEvaluator(DiversityEvaluator):
     def eval_diversity(self, populations: List[NetworkGenotype]) -> List[float]:
         state_samples = self.replay_memory.sample(self.num_samples)
         trajectories = self.compute_trajectory([p.to_network() for p in populations], state_samples)
-        diversity_scores = [(trajectories != trajectories[i]).sum() for i in range(len(populations))]
+        diversity_scores = [(trajectories != trajectories[i]).sum().item() for i in range(len(populations))]
         return diversity_scores
