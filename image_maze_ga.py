@@ -16,14 +16,14 @@ sns.set(style='darkgrid')
 
 env_id = 'gym_image_maze:ImageMaze-v0'
 num_populations = 100
-num_generations = 25
+num_generations = 200
 
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
-ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, mutation_prob=1.0, mutation_power=0.002, crossover_prob=0.5)
-solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=50, run_mode='multiprocess', visualize=False)
+ga = SimpleGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, mutation_prob=1.0, mutation_power=0.005, crossover_prob=0.5)
+solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=75, run_mode='multiprocess', visualize=False)
 
 evaluation_log = eval_logger.get_data()
 ray.shutdown()
@@ -46,8 +46,8 @@ plt.savefig(f'./resources/{env_id.split(":")[1]}_ga.png')
 
 # Heatmap
 bg_img = f'{env_id.split(":")[1].split("-")[1]}'
-bg = cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (64, 64))
-heatmap = np.zeros((64, 64))
+bg = cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48))
+heatmap = np.zeros((48, 48))
 for x,y in positions_log: heatmap[y][x] = min(heatmap[y][x] + 1, 350)
 plt.figure()
 plt.axis('off')

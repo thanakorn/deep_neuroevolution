@@ -46,8 +46,8 @@ plt.savefig(f'./resources/{env_id.split(":")[1]}_crowding.png')
 
 # Heatmap
 bg_img = f'{env_id.split(":")[1].split("-")[1]}'
-bg = cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (64, 64))
-heatmap = np.zeros((64, 64))
+bg = cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48))
+heatmap = np.zeros((48, 48))
 for x,y in positions_log: heatmap[y][x] = min(heatmap[y][x] + 1, 350)
 plt.figure()
 plt.axis('off')
