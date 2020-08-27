@@ -14,9 +14,9 @@ from utilities.image_maze_experiment import preprocess, get_log_data, num_action
 
 sns.set(style='darkgrid')
 
-env_id = 'gym_image_maze:ImageMaze-v1'
+env_id = 'gym_image_maze:ImageMaze-v2'
 num_populations = 100
-num_generations = 400
+num_generations = 5
 
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
@@ -37,11 +37,16 @@ max_dist = [np.max(distances_log[i:(i + 1) * (num_populations * 2)]) for i in ra
 plt.figure()
 plt.plot(range(num_generations), avg_dist, label='AVG')
 plt.plot(range(num_generations), max_dist, color='red', label='BEST')
-plt.hlines(0, 0, num_generations, linestyles='dashed', label='GOAL', color='black')
+plt.hlines(0, 0, num_generations, linestyles='dashed', color='black')
+plt.hlines(-22, 0, num_generations, linestyles='dashed', color='black')
+plt.hlines(-10, 0, num_generations, linestyles='dashed', color='black')
+plt.annotate('Trap 1', xy=(0,-21), xycoords='data')
+plt.annotate('Trap 2', xy=(0,-9), xycoords='data')
+plt.annotate('Goal', xy=(0,1), xycoords='data')
 plt.ylim(top=3)
 plt.xlabel('Generation')
 plt.ylabel('Distance to Goal(Negative)')
-plt.legend()
+plt.legend(loc='lower right')
 plt.savefig(f'./resources/{env_id.split(":")[1]}_crowding.png')
 
 # Heatmap
