@@ -1,5 +1,7 @@
 *.ipynb_checkpoints
 *lightning_logs
+resources/Image*.png
+resources/*.params
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
