@@ -12,13 +12,13 @@ from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
 from utilities.evaluation_logger import EvaluationLogger
 from memory.replay_memory import ReplayMemory
-from utilities.image_maze_experiment import preprocess, get_log_data, num_actions, frame_stack_size, num_episodes_eval, network_schema
+from utilities.image_maze_experiment import preprocess, get_log_data, num_actions, frame_stack_size, num_episodes_eval, network_schema, plot_learning_curve, plot_heatmap, plot_final_pos
 
 sns.set(style='darkgrid')
 
-env_id = 'gym_image_maze:ImageMaze-v2'
-num_populations = 100
-num_generations = 5
+env_id = 'gym_image_maze:ImageMaze-v0'
+num_populations = 20
+num_generations = 100
 
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
@@ -35,33 +35,28 @@ positions_log = [pos for pos, _ in evaluation_log]
 distances_log = [-1 * dis for _, dis in evaluation_log]
 
 # Learning curve
-avg_dist = [np.mean(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
-max_dist = [np.max(distances_log[i:(i + 1) * num_populations]) for i in range(num_generations)]
-plt.figure()
-plt.plot(range(num_generations), avg_dist, label='AVG')
-plt.plot(range(num_generations), max_dist, color='red', label='BEST')
-plt.hlines(0, 0, num_generations, linestyles='dashed', color='black')
-plt.hlines(-22, 0, num_generations, linestyles='dashed', color='black') # Trap 1
-plt.hlines(-10, 0, num_generations, linestyles='dashed', color='black') # Trap 2
-plt.annotate('Trap 1', xy=(0,-21), xycoords='data')
-plt.annotate('Trap 2', xy=(0,-9), xycoords='data')
-plt.annotate('Goal', xy=(0,1), xycoords='data')
-plt.ylim(top=3)
-plt.xlabel('Generation')
-plt.ylabel('Distance to Goal(Negative)')
-plt.legend(loc='lower right')
-plt.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga.png')
+learning_plot, ax = plot_learning_curve(distances_log, num_generations, num_populations * 2)
+if env_id.endswith('v1'):
+    ax.hlines(-22, 0, num_generations, linestyles='dashed', color='black')
+    ax.annotate('Trap', xy=(0,-21), xycoords='data')
+if env_id.endswith('v2'):
+    ax.hlines(-22, 0, num_generations, linestyles='dashed', color='black')
+    ax.annotate('Trap 1', xy=(0,-21), xycoords='data')
+    ax.hlines(-10, 0, num_generations, linestyles='dashed', color='black')
+    ax.annotate('Trap 2', xy=(0,-9), xycoords='data')
+learning_plot.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga.png')
 
 # Heatmap
 bg_img = f'{env_id.split(":")[1].split("-")[1]}'
-bg = cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48))
-heatmap = np.zeros((48, 48))
-for x,y in positions_log: heatmap[y][x] = min(heatmap[y][x] + 1, 350)
-plt.figure()
-plt.axis('off')
-plt.imshow(bg)
-plt.imshow(heatmap, cmap=plt.cm.Reds, interpolation='gaussian', alpha=0.3)
-plt.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga_heatmap.png')
+heatmap_plot, ax = plot_heatmap(cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48)), positions_log, 200)
+heatmap_plot.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga_heatmap.png')
+
+# Last gen position
+bg_img = f'{env_id.split(":")[1].split("-")[1]}'
+last_gen_pos = positions_log[-1 * num_populations:]
+print(len(last_gen_pos))
+last_gen_heatmap_plot, ax = plot_final_pos(cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48)), last_gen_pos)
+last_gen_heatmap_plot.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga_last_gen_pos.png')
 
 controller = solution.to_network()
 torch.save(controller.state_dict(), f'./resources/{env_id.split(":")[1]}_multi_ga.params')
