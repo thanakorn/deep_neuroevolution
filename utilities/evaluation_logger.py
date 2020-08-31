@@ -6,7 +6,7 @@ class EvaluationLogger:
         self.get_log_data = get_log_data
         
     def log_data(self, env):
-        self.log.put_nowait(self.get_log_data(env))
+        self.log.put(self.get_log_data(env))
         
     def get_data(self):
         return [self.log.get() for _ in range(self.log.size())]

@@ -40,9 +40,6 @@ class SimpleGA(GeneticAlgorithm):
         num_elites = int(self.selection_pressure * self.num_populations)
         elites = select_elites(old_gen, fitnesses, num_elites)
         new_generation = [elites[-1]] # Best model survives and is carried to next gen
-        mutation_populations = gen_population_mutation(elites, n=int(self.num_populations / 2) - 1, mutation_rate=self.mutation_prob, mutation_power=self.mutation_power)
-        crossover_populations = gen_population_crossover(elites, n=int(self.num_populations / 2))
-        new_generation.extend(mutation_populations)
-        new_generation.extend(crossover_populations)
-        random.shuffle(new_generation)
+        offsprings = gen_population_mutation(elites, n=self.num_populations - 1, mutation_rate=self.mutation_prob, mutation_power=self.mutation_power)
+        new_generation.extend(offsprings)
         return new_generation

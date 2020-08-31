@@ -21,12 +21,7 @@ class DeterministicCrowdingGA(GeneticAlgorithm):
         return solution, LearningInfo(avg_fitnesses, max_fitnesses)
     
     def gen_offsprings(self, parents):
-        offsprings = []
-        for p1, p2 in zip(parents[0::2], parents[1::2]):
-            c1, c2 = crossover(p1, p2, random_generator)
-            offsprings.append(mutate(c1, random_generator, self.mutation_prob, self.mutation_power))
-            offsprings.append(mutate(c2, random_generator, self.mutation_prob, self.mutation_power))
-        return offsprings
+        return [mutate(p, random_generator, self.mutation_prob, self.mutation_power) for p in parents]
     
     def replace_parents(self, parents, parent_fitnesses, offsprings, offspring_fitnesses):
         new_generation = []

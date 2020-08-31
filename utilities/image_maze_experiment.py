@@ -11,14 +11,14 @@ frame_stack_size = 1
 num_episodes_eval = 1
 
 network_schema = {
-                    'conv1': ConvSchema(frame_stack_size, 8, 8, 4),
+                    'conv1': ConvSchema(frame_stack_size, 4, 8, 4),
                     'relu1': ActivationSchema('ReLU'),
-                    'conv2': ConvSchema(8, 16, 5, 2),
+                    'conv2': ConvSchema(4, 8, 5, 2),
                     'relu2': ActivationSchema('ReLU'),
                     'flatten': ActivationSchema('Flatten'),
-                    'fc1': LinearSchema(256, 32),
+                    'fc1': LinearSchema(128, 16),
                     'relu3': ActivationSchema('ReLU'),
-                    'output': LinearSchema(32, num_actions)
+                    'output': LinearSchema(16, num_actions)
                  }
 
 def preprocess(screen):

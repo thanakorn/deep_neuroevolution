@@ -7,7 +7,7 @@ from genetic_algorithm.opetators import mutate
 from utilities.random_generator import NPRandomGenerator
 
 schema = {
-    'fc': LinearSchema(10, 5)
+    'fc': LinearSchema(10, 100)
 }
 random_generator = NPRandomGenerator()
 
@@ -17,12 +17,12 @@ def is_offspring(a, b):
         if torch.equal(a.genes[i], b.genes[i]):
             num_similar_genes += 1
 
-    return num_similar_genes == int(len(a.genes) / 2)
+    return (num_similar_genes / len(a.genes)) >= 0.5
 
 class CrowdingGATest(unittest.TestCase):
     def test_gen_offsprings(self):
-        num_population = 4
-        ga = DeterministicCrowdingGA(num_population, FitnessEvaluator, selection_pressure=1.0, mutation_prob=1.0, mutation_power=0., crossover_prob=0.5)
+        num_population = 20
+        ga = DeterministicCrowdingGA(num_population, FitnessEvaluator, selection_pressure=1.0, mutation_prob=0.1, mutation_power=0.1, crossover_prob=0.5)
         parents = [mutate(TensorGenotype(schema), random_generator, 1., 0.1) for i in range(num_population)]
         offsprings = ga.gen_offsprings(parents)
         
@@ -32,7 +32,7 @@ class CrowdingGATest(unittest.TestCase):
             
     def test_replace_parents(self):
         num_population = 4
-        ga = DeterministicCrowdingGA(num_population, FitnessEvaluator, selection_pressure=1.0, mutation_prob=1.0, mutation_power=0., crossover_prob=0.5)
+        ga = DeterministicCrowdingGA(num_population, FitnessEvaluator, selection_pressure=1.0, mutation_prob=0.1, mutation_power=0., crossover_prob=0.5)
         parents = [TensorGenotype(schema) for i in range(num_population)]
         parent_fitnesses = [0.1, 0.5, 0.7, 0.2]
         offsprings = ga.gen_offsprings(parents)
