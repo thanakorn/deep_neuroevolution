@@ -6,8 +6,8 @@ import numpy as np
 import cv2 as cv
 
 from genetic_algorithm.genotype import TensorGenotype
-from genetic_algorithm.multi_obj_ga import MultiObjGA
-from genetic_algorithm.image_maze_evaluator import ImageMazeDiversityEvaluator
+from genetic_algorithm.diversity_promoted_ga import DiversityPromotedGA
+from genetic_algorithm.diversity_evaluator import TrajectoryDiversityEvaluator
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
 from utilities.evaluation_logger import EvaluationLogger
@@ -17,15 +17,16 @@ from utilities.image_maze_experiment import preprocess, get_log_data, num_action
 sns.set(style='darkgrid')
 
 env_id = 'gym_image_maze:ImageMaze-v0'
-num_populations = 20
-num_generations = 100
+num_populations = 200
+num_generations = 50
 
 ray.init()
+replay_memory = ReplayMemory(200000, memory_ratio=0.01)
 eval_logger = EvaluationLogger(get_log_data)
-reward_evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
-diversity_evaluator = ImageMazeDiversityEvaluator(FrameStackEnvManager, logger=None, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
+reward_evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size, replay_memory=replay_memory)
+diversity_evaluator = TrajectoryDiversityEvaluator(replay_memory=replay_memory, num_samples=8, num_workers=4)
 init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
-ga = MultiObjGA(num_populations=num_populations,fitness_evaluators=[reward_evaluator, diversity_evaluator], mutation_prob=1.0, mutation_power=0.005)
+ga = DiversityPromotedGA(num_populations=num_populations,fitness_evaluators=reward_evaluator, diversity_evaluator=diversity_evaluator, mutation_prob=1.0, mutation_power=0.005)
 solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=75, run_mode='multiprocess', visualize=False)
 
 evaluation_log = eval_logger.get_data()
@@ -35,7 +36,7 @@ positions_log = [pos for pos, _ in evaluation_log]
 distances_log = [-1 * dis for _, dis in evaluation_log]
 
 # Learning curve
-learning_plot, ax = plot_learning_curve(distances_log, num_generations, num_populations * 2)
+learning_plot, ax = plot_learning_curve(distances_log, num_generations, num_populations)
 if env_id.endswith('v1'):
     ax.hlines(-22, 0, num_generations, linestyles='dashed', color='black')
     ax.annotate('Trap', xy=(0,-21), xycoords='data')
@@ -52,16 +53,18 @@ heatmap_plot, ax = plot_heatmap(cv.resize(cv.imread(f'./resources/{bg_img}.png',
 heatmap_plot.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga_heatmap.png')
 
 # Last gen position
-bg_img = f'{env_id.split(":")[1].split("-")[1]}'
-last_gen_pos = positions_log[-1 * num_populations:]
-print(len(last_gen_pos))
-last_gen_heatmap_plot, ax = plot_final_pos(cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48)), last_gen_pos)
-last_gen_heatmap_plot.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga_last_gen_pos.png')
+step = max(1, int((num_generations - 1) / 4))
+for i in range(0, num_generations, step):
+    bg_img = f'{env_id.split(":")[1].split("-")[1]}'
+    last_gen_pos = positions_log[i * num_populations:(i + 1) * num_populations]
+    last_gen_heatmap_plot, ax = plot_final_pos(cv.resize(cv.imread(f'./resources/{bg_img}.png', 0), (48, 48)), last_gen_pos)
+    last_gen_heatmap_plot.savefig(f'./resources/{env_id.split(":")[1]}_multi_ga_{int(i/step)}_pos.png')
 
 controller = solution.to_network()
 torch.save(controller.state_dict(), f'./resources/{env_id.split(":")[1]}_multi_ga.params')
 env = FrameStackEnvManager(env_id, frame_stack_size=1, preprocess=preprocess)
-for i in range(5):
+
+for i in range(2):
     total_reward = 0
     state = env.reset()
     done = False
