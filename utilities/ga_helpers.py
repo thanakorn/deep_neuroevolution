@@ -18,6 +18,7 @@ def calculate_fitnesses(populations: List[NetworkGenotype], evaluator: FitnessEv
 
 def compute_q_values(policies, states, num_workers=None):
     get_trajectory = lambda policy, s: policy(s)
-    eval_arguments = [(p, s) for p, s in list(zip(policies, repeat(states)))]
-    q_values = concurrent_execute(get_trajectory, eval_arguments, mode='multiprocess', num_workers=num_workers) if num_workers is not None else execute(get_trajectory, eval_arguments)
+    with tqdm(total=len(policies), desc='Evaluate Diversity') as pbar: 
+        eval_arguments = [(p, s) for p, s in list(zip(policies, repeat(states)))]
+        q_values = concurrent_execute(get_trajectory, eval_arguments, mode='multiprocess', num_workers=num_workers, pbar=pbar) if num_workers is not None else execute(get_trajectory, eval_arguments)
     return q_values

@@ -22,8 +22,8 @@ network_schema = {
                  }
 
 def preprocess(screen):
-    screen[screen < 255] = 0
-    screen = screen / screen.max()
+    # screen[screen < 255] = 0
+    # screen = screen / screen.max()
     screen = np.ascontiguousarray(screen)
     return screen
 
