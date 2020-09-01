@@ -12,14 +12,15 @@ class LayerGenotypeTest(unittest.TestCase):
             'fc2': LinearSchema(8,2),
         }
         network_genotype = LayerGenotype(network_schema)
-        self.assertTrue('conv1.weight' in network_genotype.genes)
-        self.assertTrue('conv1.bias' in network_genotype.genes)
-        self.assertTrue('conv2.weight' in network_genotype.genes)
-        self.assertTrue('conv2.bias' in network_genotype.genes)
-        self.assertTrue('fc1.weight' in network_genotype.genes)
-        self.assertTrue('fc1.bias' in network_genotype.genes)
-        self.assertTrue('fc2.weight' in network_genotype.genes)
-        self.assertTrue('fc2.bias' in network_genotype.genes)
+        state_dict = network_genotype.to_state_dict()
+        self.assertTrue('conv1.weight' in state_dict)
+        self.assertTrue('conv1.bias' in state_dict)
+        self.assertTrue('conv2.weight' in state_dict)
+        self.assertTrue('conv2.bias' in state_dict)
+        self.assertTrue('fc1.weight' in state_dict)
+        self.assertTrue('fc1.bias' in state_dict)
+        self.assertTrue('fc2.weight' in state_dict)
+        self.assertTrue('fc2.bias' in state_dict)
         
     def test_network_genotype_parameter_dimension(self):
         network_schema = {
@@ -27,10 +28,10 @@ class LayerGenotypeTest(unittest.TestCase):
             'fc1': LinearSchema(12,2)
         }
         network_genotype = LayerGenotype(network_schema)
-        conv1_weight = network_genotype.genes['conv1.weight']
-        conv1_bias = network_genotype.genes['conv1.bias']
-        fc1_weight = network_genotype.genes['fc1.weight']
-        fc1_bias = network_genotype.genes['fc1.bias']
+        conv1_weight = network_genotype.genes[0]
+        conv1_bias = network_genotype.genes[1]
+        fc1_weight = network_genotype.genes[2]
+        fc1_bias = network_genotype.genes[3]
         self.assertTrue(torch.Size([16, 3, 4, 4]) == conv1_weight.shape)
         self.assertTrue(torch.Size([16]) == conv1_bias.shape)
         self.assertTrue(torch.Size([2, 12]) == fc1_weight.shape)
@@ -46,11 +47,11 @@ class LayerGenotypeTest(unittest.TestCase):
         clone_genotype = genotype.clone()
         cloned_genes = clone_genotype.genes
         self.assertTrue(genotype.schema == clone_genotype.schema)
-        self.assertTrue(torch.equal(genes['conv1.weight'], cloned_genes['conv1.weight']))
-        self.assertTrue(torch.equal(genes['conv1.bias'], cloned_genes['conv1.bias']))
-        self.assertTrue(torch.equal(genes['fc1.weight'], cloned_genes['fc1.weight']))
-        self.assertTrue(torch.equal(genes['fc1.bias'], cloned_genes['fc1.bias']))
-        self.assertNotEqual(id(genes['fc1.bias']), id(cloned_genes['fc1.bias'])) # Ensure deepcopy
+        self.assertTrue(torch.equal(genes[0], cloned_genes[0]))
+        self.assertTrue(torch.equal(genes[1], cloned_genes[1]))
+        self.assertTrue(torch.equal(genes[2], cloned_genes[2]))
+        self.assertTrue(torch.equal(genes[3], cloned_genes[3]))
+        self.assertNotEqual(id(genes[3]), id(cloned_genes[3])) # Ensure deepcopy
         
     def test_genoty_to_network(self):
         network_schema = {

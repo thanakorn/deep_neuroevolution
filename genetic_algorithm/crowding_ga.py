@@ -26,7 +26,7 @@ class DeterministicCrowdingGA(GeneticAlgorithm):
     def replace_parents(self, parents, parent_fitnesses, offsprings, offspring_fitnesses):
         new_generation = []
         for i in range(self.num_populations):
-            p = parents[i] if parent_fitnesses[i] > offspring_fitnesses[i] else offsprings[i] # Offspring i is a child of population i
+            p = parents[i] if parent_fitnesses[i] >= offspring_fitnesses[i] else offsprings[i] # Offspring i is a child of population i
             new_generation.append(p)
         return new_generation
     

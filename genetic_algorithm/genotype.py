@@ -42,22 +42,31 @@ class NetworkGenotype:
 class LayerGenotype(NetworkGenotype):
     def __init__(self, schema: NetworkSchema, init_func=None):
         super().__init__(schema, init_func)
-        self.genes = OrderedDict()
+        self.genes = []
         for name, module_schema in schema.items():
             if isinstance(module_schema, ConvSchema):
                 in_channel, out_channel, kernel_size, _ = module_schema
-                weight = torch.rand((out_channel, in_channel, kernel_size, kernel_size))
-                bias = torch.zeros(out_channel)
+                w = torch.rand((out_channel, in_channel, kernel_size, kernel_size))
+                w = init_func(w) if init_func is not None else w
+                self.genes.append(w)
+                self.genes.append(torch.zeros(out_channel))
             elif isinstance(module_schema, LinearSchema):
                 in_feature, out_feature = module_schema
-                weight = torch.rand((out_feature, in_feature))
-                bias = torch.zeros(out_feature)
-                
-            self.genes[f'{name}.weight'] = init_func(weight) if init_func is not None else weight
-            self.genes[f'{name}.bias'] = bias
+                w = torch.rand((out_feature, in_feature))
+                w = init_func(w) if init_func is not None else w
+                self.genes.append(w)
+                self.genes.append(torch.zeros(out_feature))
                 
     def to_state_dict(self):
-        return self.genes            
+        state_dict = {}
+        idx = 0
+        for name, module_schema in self.schema.items():
+            if isinstance(module_schema, ConvSchema) or isinstance(module_schema, LinearSchema):
+                state_dict[f'{name}.weight'] = self.genes[idx]
+                state_dict[f'{name}.bias'] = self.genes[idx + 1]
+                idx += 2
+        
+        return state_dict           
     
 class TensorGenotype(NetworkGenotype):
     def __init__(self, schema: NetworkSchema, init_func=None):
