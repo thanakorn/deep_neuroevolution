@@ -1,20 +1,13 @@
 import gym
 import torch
 import torch.nn as nn
-from typing import TypeVar, Generic
+
+from genetic_algorithm.fitness_evaluator import FitnessEvaluator
 from genetic_algorithm.genotype import NetworkGenotype
 from environment.environment_manager import EnvironmentManager
-from model.genetic_network import GeneticNetwork
-from itertools import count
 from utilities.evaluation_logger import EvaluationLogger
 
-T = TypeVar('T', GeneticNetwork, GeneticNetwork)
-
-class FitnessEvaluator:
-    def eval_fitness(self, genotype: NetworkGenotype) -> float:
-        raise NotImplementedError()
-    
-class GymFitnessEvaluator(FitnessEvaluator):
+class MazeEvaluator(FitnessEvaluator):
     def __init__(self, env_manger: EnvironmentManager, logger: EvaluationLogger = None, **env_args):
         self.env_manger = env_manger
         self.logger = logger
@@ -42,5 +35,6 @@ class GymFitnessEvaluator(FitnessEvaluator):
                 fitness += total_reward / float(num_episodes)
                 if self.logger is not None: self.logger.log_data(env)
         
+        final_pos = env.maze.robot.position
         env.close()
-        return fitness, {}
+        return fitness, final_pos

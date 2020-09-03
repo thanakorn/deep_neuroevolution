@@ -12,7 +12,7 @@ class DeterministicCrowdingGA(GeneticAlgorithm):
         avg_fitnesses, max_fitnesses = [], []
         solution = None
         for gen in range(num_generations):
-            fitnesses = calculate_fitnesses(populations, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
+            fitnesses, _ = calculate_fitnesses(populations, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
             avg_fitnesses.append(fitnesses.mean())
             max_fitnesses.append(fitnesses.max())
             solution = populations[fitnesses.argmax()]
@@ -33,7 +33,7 @@ class DeterministicCrowdingGA(GeneticAlgorithm):
     def new_generation(self, old_gen, fitnesses, *args):
         gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize = args
         offsprings = self.gen_offsprings(old_gen)
-        offspring_fitnesses = calculate_fitnesses(offsprings, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
+        offspring_fitnesses, _ = calculate_fitnesses(offsprings, self.fitness_evaluator, gen, num_workers, run_mode, max_iterations, num_episodes_eval, visualize)
         new_generation = self.replace_parents(old_gen, fitnesses, offsprings, offspring_fitnesses)
         random.shuffle(new_generation)
         return new_generation

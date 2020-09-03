@@ -18,7 +18,9 @@ def mutate(genotype: NetworkGenotype, random_generator: RandomGenerator, mutatio
     child = genotype.clone()
     gene_length = len(genotype.genes)
     idx_to_mutate = random_generator.randint(gene_length, int(mutation_rate * gene_length))
-    for i in idx_to_mutate: child.genes[i] += mutation_power * torch.randn_like(child.genes[i])
+    for i in idx_to_mutate: 
+        pertubation = mutation_power * torch.randn_like(child.genes[i])
+        child.genes[i] += pertubation
     return child
 
 def crossover(a: NetworkGenotype, b:NetworkGenotype, random_generator: RandomGenerator) -> NetworkGenotype:

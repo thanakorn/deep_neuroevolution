@@ -11,10 +11,12 @@ def calculate_fitnesses(populations: List[NetworkGenotype], evaluator: FitnessEv
     eval_arguments = [(p, *args) for p, args in list(zip(populations, repeat(eval_args)))]
     desc = f'Generation {gen}' if gen is not None else ''
     with tqdm(total=len(populations), desc=desc) as pbar:
-        fitnesses = concurrent_execute(eval, eval_arguments, mode=run_mode, num_workers=num_workers, pbar=pbar) if num_workers is not None else execute(eval, populations, pbar)
+        results = concurrent_execute(eval, eval_arguments, mode=run_mode, num_workers=num_workers, pbar=pbar) if num_workers is not None else execute(eval, populations, pbar)
+        fitnesses = [fitness for fitness, _ in results]
+        info = [info for _, info in results]
         fitnesses = np.array(fitnesses)
         pbar.set_postfix(max_f=fitnesses.max(), min_f=fitnesses.min(), avg_f=fitnesses.mean())
-    return np.array(fitnesses)
+    return np.array(fitnesses), info
 
 def compute_q_values(policies, states, num_workers=None):
     get_trajectory = lambda policy, s: policy(s)
