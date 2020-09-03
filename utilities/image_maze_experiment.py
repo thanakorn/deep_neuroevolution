@@ -6,24 +6,22 @@ from scipy.stats import gaussian_kde
 
 __all__ = ['preprocess', 'get_log_data', 'num_actions', 'frame_stack_size', 'num_episodes_eval', 'network_schema']
 
-num_actions = 5
+num_actions = 4
 frame_stack_size = 1
 num_episodes_eval = 1
 
 network_schema = {
-                    'conv1': ConvSchema(frame_stack_size, 4, 8, 4),
+                    'conv1': ConvSchema(frame_stack_size, 2, 12, 4),
                     'relu1': ActivationSchema('ReLU'),
-                    'conv2': ConvSchema(4, 8, 5, 2),
-                    'relu2': ActivationSchema('ReLU'),
                     'flatten': ActivationSchema('Flatten'),
-                    'fc1': LinearSchema(128, 16),
-                    'relu3': ActivationSchema('ReLU'),
+                    'fc1': LinearSchema(200, 16),
+                    'relu1': ActivationSchema('ReLU'),
                     'output': LinearSchema(16, num_actions)
                  }
 
 def preprocess(screen):
-    # screen[screen < 255] = 0
-    # screen = screen / screen.max()
+    screen[screen < 255] = 0
+    screen = screen / screen.max()
     screen = np.ascontiguousarray(screen)
     return screen
 
