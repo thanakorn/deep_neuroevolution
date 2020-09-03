@@ -1,13 +1,15 @@
 import gym
 import torch
 import torch.nn as nn
+import math
+
 from typing import TypeVar, Generic, List
 from genetic_algorithm.genotype import NetworkGenotype
 from environment.environment_manager import EnvironmentManager
 from model.genetic_network import GeneticNetwork
 from memory.replay_memory import ReplayMemory
 from itertools import count
-from utilities.ga_helpers import compute_q_values
+from utilities.ga_helpers import compute_q_values, calculate_fitnesses
 
 class DiversityEvaluator:
     def eval_diversity(self, populations: List[NetworkGenotype]) -> List[float]:
@@ -32,8 +34,14 @@ class TrajectoryDiversityEvaluator(DiversityEvaluator):
         return diversity_scores
     
 class FinalPosDiversityEvaluator(DiversityEvaluator):
-    def __init__(self):
-        pass
-    
-    def eval_diversity(self, populations: List[NetworkGenotype]):
-        pass
+    def eval_diversity(self, final_states):
+        diversity_scores = [0.] * len(final_states)
+        for i in range(len(final_states)):
+            ax, ay = final_states[i]
+            for j in range(i+1, len(final_states)):
+                bx, by = final_states[j]
+                d = math.sqrt((ax - bx)**2 + (ay - by)**2)
+                diversity_scores[i] += d
+                diversity_scores[j] += d
+        return diversity_scores
+        
