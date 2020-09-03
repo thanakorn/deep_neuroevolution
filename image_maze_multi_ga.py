@@ -5,10 +5,10 @@ import seaborn as sns
 import numpy as np
 import cv2 as cv
 
-from genetic_algorithm.genotype import TensorGenotype
+from genetic_algorithm.genotype import LayerGenotype
 from genetic_algorithm.diversity_promoted_ga import DiversityPromotedGA
-from genetic_algorithm.diversity_evaluator import TrajectoryDiversityEvaluator
-from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
+from genetic_algorithm.diversity_evaluator import FinalPosDiversityEvaluator
+from genetic_algorithm.maze_evaluator import MazeEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
 from utilities.evaluation_logger import EvaluationLogger
 from memory.replay_memory import ReplayMemory
@@ -16,18 +16,17 @@ from utilities.image_maze_experiment import preprocess, get_log_data, num_action
 
 sns.set(style='darkgrid')
 
-env_id = 'gym_image_maze:ImageMaze-v0'
-num_populations = 200
-num_generations = 50
+env_id = 'gym_image_maze:ImageMaze-v1'
+num_populations = 300
+num_generations = 21
 
 ray.init()
-replay_memory = ReplayMemory(200000, memory_ratio=0.01)
 eval_logger = EvaluationLogger(get_log_data)
-reward_evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size, replay_memory=replay_memory)
-diversity_evaluator = TrajectoryDiversityEvaluator(replay_memory=replay_memory, num_samples=8, num_workers=4)
-init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
-ga = DiversityPromotedGA(num_populations=num_populations,fitness_evaluators=reward_evaluator, diversity_evaluator=diversity_evaluator, mutation_prob=1.0, mutation_power=0.005)
-solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=75, run_mode='multiprocess', visualize=False)
+reward_evaluator = MazeEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
+diversity_evaluator = FinalPosDiversityEvaluator()
+init_populations = [LayerGenotype(network_schema, torch.nn.init.xavier_uniform_) for i in range(num_populations)]
+ga = DiversityPromotedGA(num_populations=num_populations,fitness_evaluator=reward_evaluator, diversity_evaluator=diversity_evaluator, mutation_prob=1.0, mutation_power=0.01)
+solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=50, run_mode='multiprocess', visualize=False)
 
 evaluation_log = eval_logger.get_data()
 ray.shutdown()

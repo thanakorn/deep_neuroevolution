@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 import cv2 as cv
 
-from genetic_algorithm.genotype import TensorGenotype
+from genetic_algorithm.genotype import LayerGenotype, TensorGenotype
 from genetic_algorithm.crowding_ga import DeterministicCrowdingGA
 from genetic_algorithm.fitness_evaluator import GymFitnessEvaluator
 from environment.framestack_env_manager import FrameStackEnvManager
@@ -14,16 +14,16 @@ from utilities.image_maze_experiment import preprocess, get_log_data, num_action
 
 sns.set(style='darkgrid')
 
-env_id = 'gym_image_maze:ImageMaze-v2'
-num_populations = 500
-num_generations = 41
+env_id = 'gym_image_maze:ImageMaze-v3'
+num_populations = 200
+num_generations = 21
 
 ray.init()
 eval_logger = EvaluationLogger(get_log_data)
 evaluator = GymFitnessEvaluator(FrameStackEnvManager, eval_logger, env_name=env_id, preprocess=preprocess, frame_stack_size=frame_stack_size)
-init_populations = [TensorGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
-ga = DeterministicCrowdingGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, mutation_prob=1.0, mutation_power=0.005, crossover_prob=0.5)
-solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=None, run_mode='multiprocess', visualize=False)
+init_populations = [LayerGenotype(network_schema, torch.nn.init.xavier_normal_) for i in range(num_populations)]
+ga = DeterministicCrowdingGA(num_populations=num_populations,fitness_evaluator=evaluator, selection_pressure=0.1, mutation_prob=1.0, mutation_power=1.0, crossover_prob=0.5)
+solution, info = ga.run(populations=init_populations, num_generations=num_generations, num_workers=4, max_iterations=50, run_mode='multiprocess', visualize=False)
 
 evaluation_log = eval_logger.get_data()
 ray.shutdown()
